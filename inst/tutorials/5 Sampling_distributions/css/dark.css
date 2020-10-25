@@ -1,0 +1,25 @@
+body {
+  background-color: #2D3973;
+}
+
+h1 {
+  color: yellow;
+}
+
+h2 {
+  color: yellow;
+}
+
+h3 {
+  color: yellow;
+}
+
+pre {
+  color: steelblue;
+}
+
+code {
+  color: #white;
+  background-color: #2D3973;
+  font-size: 105%;
+}

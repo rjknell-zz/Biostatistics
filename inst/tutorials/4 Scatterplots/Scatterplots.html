@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Rob Knell" />
+
+
+<meta name="progressive" content="false" />
+<meta name="allow-skip" content="false" />
+
+<title>Descriptive and Exploratory Statistics 4: Scatterplots</title>
+
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+<!-- taken from https://github.com/rstudio/rmarkdown/blob/67b7f5fc779e4cfdfd0f021d3d7745b6b6e17149/inst/rmd/h/default.html#L296-L362 -->
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+<!-- end tabsets -->
+
+
+<link rel="stylesheet" href="http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div class="pageContent band">
+<div class="bandContent page">
+
+<div class="topics">
+
+<div id="section-introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Very often we find ourselves dealing with data where there is more than one measurement made on each individual that we are studying, and a lot of the time we are interested in the relationships between these variables — as an example, if we’re studying plant diseases we might want to know whether there is a relationship between the number of leaves showing infection on a plant and the growth rate of the plant, or we might be interested in whether people with an autoimmune disease also have high rates of reactivity to IgA antibodies. When we have <em>bivariate</em> data like this (bivariate meaning that for each individual we have two measurements) we can of course go through our normal exploratory look at each individual variable, using histograms or boxplots to visualise the shape of the distribution and to give us an idea of where the variables are centred and how much spread there is. Once we’ve done that, however, we can go further and look at the two variables together. For numeric data this would usually be done by plotting a <em>scatterplot</em> with one variable on the x-axis and one on the y-axis. Scatterplots are particularly useful tools for exploratory data analysis because you can easily see whether there appears to be any relationship between your variables, you can check for anomalous data, you can see if there is any curvature in the relationship and you can check for any signs of <em>structure</em> or <em>grouping</em> in your data.</p>
+<p>Here’s a video which runs through the basics of what scatterplots are and what the common patterns that you might see are.</p>
+<p><img src="https://youtu.be/sqVqNygszL0" /></p>
+</div>
+<div id="section-scatterplot-basics" class="section level2">
+<h2>Scatterplot basics</h2>
+<p>Here’s an example of a scatterplot, and the R code used to draw it. The <code>plot()</code> function in R will generate a scatterplot if you give it two numerical variables. You might notice the way that the two variables are entered as a <em>formula</em> so the y-axis variable comes first, followed by the x-axis one and they are separated by a tilde <code>~</code>. You can also specify <code>x=</code> and <code>y=</code> as separate arguments for a plot and you’ll get the same result. The best thing to do is to pick one method and stick with it so there is no confusion. The data are from a study published by Charters <em>et al.</em> in 2018<sup>1</sup> looking at physical performance in <a href="https://en.wikipedia.org/wiki/Northern_quoll">Northern Quolls</a>, a small marsupial predator found in Australia. Note that both grasping force and maximum oxygen uptake have been ‘standardised’ — converted to variables with a mean of zero and a standard deviation of 1 — this is for a multidimensional analysis that the authors did, but it doesn’t really affect us here except that units don’t really make much sense for these variables.</p>
+<p>We start out by loading the data which I have on a web server</p>
+<pre class="r"><code>quolls &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/ChartersetalQuolls.csv&quot;)</code></pre>
+<p>Now to draw the scatterplot/</p>
+<pre class="r"><code>plot(quolls$grasp ~ quolls$Max_O2_consump, #Variables to be plotted
+     pch = 16,  #Plot with solid circles for plot characters
+     col = &quot;steelblue&quot;, #Nice colour for plotting points
+     xlab = &quot;Maximum oxygen consumption&quot;, #x-axis label
+     ylab = &quot;Grasping force&quot;, #y-axis label
+)</code></pre>
+<p><img src="Scatterplots_files/figure-html/unnamed-chunk-3-1.png" width="480" /></p>
+<p>You can look at this scatterplot and you can see a pattern: the animals with high levels of oxygen consumption have stronger bite forces than do the animals with low levels of oxygen consumption — there is a <em>positive correlation</em>. You can also see that there is a fair amount of noise in the data, so there are some animals with high oxygen consumption and low grasping force, and some with low oxygen consumption and fairly high grapsing forces. Overall though the pattern is reasonably clear (if you’re an ecologist you’d be pleased with this degree of correlation, most physicists on the other hand would give up and do something else if they got data like these). There are no obvious problem data points, and there is no indication of a curved relationship, or any obvious clustering that might indicate groups in the data. I’d happily go on to do further analysis on these data without any concerns.</p>
+<p><sub>1</sub> Charters, J.E., Heiniger, J., Clemente, C.J., Cameron, S.F., Amir Abdul Nasir, A.F., Niehaus, A.C. &amp; Wilson, R.S. (2018) Multidimensional analyses of physical performance reveal a size‐dependent trade‐off between suites of traits. Functional ecology, 32, 1541–1553.</p>
+</div>
+<div id="section-two-simple-scatterplots" class="section level2">
+<h2>Two simple scatterplots</h2>
+<p>The data set malawi_carbon contains data on two lung immunity measures (oxidative burst activity and phagocytic activity) from people exposed to chronic carbon particulates in their homes in Malawi. These data were originally published by Rylance <em>et al.</em> (2015)<sup>1</sup> as part of a study of how exposure to smoke from cooking fires affects lung function. Let’s load the data and have a look at how these two variables relate to particulate exposure.</p>
+<pre class="r"><code>malawi_carbon &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/malawi_carbon.csv&quot;)</code></pre>
+<p>Start with the phagocytic activity data. Use the R code we used in the previous example as a guide. You’ll need to use the <code>plot()</code> function and to specify the x- and y- variables by either putting in a formula of the form <code>y~x</code> or by specifying <code>x=</code> and <code>y=</code> arguments. The variables in question are called <code>log_carbon</code>, which should go on the x-axis, (the carbon data has been log transformed: more on this later) and the variable for the phagocytic activity is called <code>phagocytosis</code> and this should go on the y-axis. Both of them are in the <code>malawi_carbon</code> data frame so you need either to refer to them using the dataframe$variable syntax or just give the names of the variables but add a <code>data = malawi_carbon</code> argument to your function call. Finally, you’ll need to put in some sensible x-axis and y-axis labels using <code>xlab = ""</code> and <code>ylab = ""</code>. I suggest “Log carbon score” for the x-axis and “Phagocytosis activity (%)” for the y-axis — the phagocytosis score is actually a the percentage of macrophages which took up flourescent silica beads.</p>
+<div class="tutorial-exercise-support" data-label="prepare-carbon" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>malawi_carbon &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/malawi_carbon.csv&quot;)</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="scatterplot01" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-carbon","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot01-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#You can specify the x- and y- variables like this:
+
+plot(phagocytosis ~ log_carbon,... )
+
+#in which case you need to specify
+
+data = malawi_carbon,... )
+
+#as one of your arguments.
+
+#Alternatively, you can do it like this
+
+plot(malawi_carbon$phagocytosis ~ malawi_carbon$log_carbon,
+     
+#If you do this you don&#39;t need to 
+#say where the data are.
+
+#Don&#39;t forget to add your other arguments. </code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot01-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot01-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+plot(phagocytosis ~ log_carbon,
+     data = malawi_carbon,
+     xlab = &quot;Log carbon score&quot;,
+     ylab = &quot;Phagocytic activity (%)&quot;)</code></pre>
+</div>
+<p>Have a look at the plot. Do you see any relationship between carbon exposure and phagocytic activity? Are there any clusters of data or obviously problematic data points with unlikely values? Don’t overthink this: your first impressions will probably be correct.</p>
+<p>Noew let’s plot our other measure of lung immune function, oxidative burst activity, against carbon score. You can use the same code as before but you need to replace <code>phagocytosis</code> with <code>oxidative_burst</code> and you’ll need a new y-axis label. I suggest “Oxidative burst index”: it doesn’t really have units.</p>
+<div class="tutorial-exercise" data-label="scatterplot02" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-carbon","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot02-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#You can specify the x- and y- variables like this:
+
+plot(oxidative_burst ~ log_carbon,... )
+
+#in which case you need to specify
+
+data = malawi_carbon,... )
+
+#as one of your arguments.
+
+#Alternatively, you can do it like this
+
+plot(malawi_carbon$oxidative_burst ~ malawi_carbon$log_carbon,
+     
+#If you do this you don&#39;t need to 
+#say where the data are.
+
+#Don&#39;t forget to add your other arguments. </code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot02-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot02-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+plot(oxidative_burst ~ log_carbon,
+     data = malawi_carbon,
+     xlab = &quot;Log carbon score&quot;,
+     ylab = &quot;Oxidative burst index&quot;)</code></pre>
+</div>
+<p>Compare this plot to the previous one. Do they look similar? Is there a pattern in one of them that you don’t see in the other?</p>
+<br>
+<details>
+<p><summary><b>Click here for explanation</b></summary> Neither plot shows a strong pattern, there are no obvious problem data points. Looking at the first there seems to be no relationship between carbon exposure and phagocytic activity, either positive or negative. Looking at the second plot, however, we can see what apppears to be a negative correlation between oxidative burst index and carbon score, with the higher values of oxidative burst activity all being associated with low carbon scores. It’s not clear, and the plot doesn’t give us much confidence that this isn’t simply a consequence of sampling error — it’s possible that the pattern we can see could have arisen simply by chance. For those who are familiar with statistical testing we can look at the significance of the correlation coefficient to give us an indication of how likely this is.</p>
+<pre class="r"><code>cor.test(malawi_carbon$oxidative_burst, malawi_carbon$log_carbon)</code></pre>
+<pre><code>## 
+##  Pearson&#39;s product-moment correlation
+## 
+## data:  malawi_carbon$oxidative_burst and malawi_carbon$log_carbon
+## t = -2.2382, df = 27, p-value = 0.03366
+## alternative hypothesis: true correlation is not equal to 0
+## 95 percent confidence interval:
+##  -0.66559861 -0.03402465
+## sample estimates:
+##        cor 
+## -0.3955971</code></pre>
+The p-value for the correlation is 0.034 which is indeed less than the cut-off for statistical significance at 0.05 so we do have a statistically significant negative correlation. The data are noisy though and the sample size is fairly small so we should be very cautious interpreting this pattern.
+</details>
+<p><br><br></p>
+<p><sup>1</sup> Rylance, J., Chimpini, C., Semple, S., Russell, D.G., Jackson, M.J., Heyderman, R.S. &amp; Gordon, S.B. (2015) Chronic Household Air Pollution Exposure Is Associated with Impaired Alveolar Macrophage Function in Malawian Non-Smokers. PloS one, 10, e0138762.</p>
+</div>
+<div id="section-increasing-variance" class="section level2">
+<h2>Increasing variance</h2>
+<p>Now we’ll use a dataframe loaded called <code>worldbank</code> which has data for 186 countries from 2014 as published by the World Bank. Let’s load the data into R.</p>
+<pre class="r"><code>worldbank &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv&quot;)</code></pre>
+<p>One of the variables is called <code>Forest_area</code> and represents the percentage of the land surface for each nation which is forested. A second variable is called <code>Precipitation</code> and is the annual precipitation in mm. Try drawing a scatterplot of forest area, on the y-axis, versus precipitation on the x-axis. We’ll make the plot look a bit nicer by using filled circles for our plot symbols, which we can do by using the argument <code>pch = 16</code>. We’ll give them some colour as well: I suggest <code>aquamarine4</code> or <code>steelblue</code> which we can specify by using the <code>col = "colour name"</code> argument. Don’t forget those quote marks.</p>
+<div class="tutorial-exercise-support" data-label="prepare-worldbank" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>worldbank &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv&quot;)</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="scatterplot1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-worldbank","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot1-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># You can use the same code we used for the first example.
+# You just need to change the two variable names and the axis labels.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot1-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Remmeber that the two variables are in the worldbank
+#data frame so you need to use the syntax 
+#worldbank$Forest_area (data frame name, $, variable name),
+#or you need to add a data = worldbank argument to the 
+#function call.
+
+#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot1-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+plot(worldbank$Forest_area ~ worldbank$Precipitation,
+     pch = 16,
+     col = &quot;steelblue&quot;,
+     xlab = &quot;Precipitation (mm)&quot;,
+     ylab = &quot;Forest area (%)&quot;)</code></pre>
+</div>
+<p>Have a look at this and see what patterns you can see. Can you see a correlation? Are there any obviously problematic data? Are there any other patterns in the data?</p>
+<br>
+<details>
+<p><summary><b>Click here for explanation</b></summary></p>
+The spread of data indicates a positive correlation: in general nations with low percentages of forest cover have low precipitation, and <em>vice-versa</em>. There are no obviously anomalous datapoints (we might look for percentages &lt;0 or &gt;100, or unfeasibly high precipitation). This plot is rather different from the previous one, however, because the amount of dispersion in the data increases as the amount of precipitation increases — when precipitation is low there is very little variance in the data and all the nations with low precipitation have little or no forest cover. This is hardly surprising since these countries are essentially deserts. When precipitation is high, however, there is a complete range of percent forest area, from almost none to close to 100%. This increasing variance (which statisticians refer to by a very polysyllabic word, <em>heteroskedasticity</em>, meaning that the variance is heterogeneous) is a common pattern in all sorts of data and is something that can cause problems with certain analyses, so you need to be aware of it.
+</details>
+</div>
+<div id="section-skew-data-and-log-transformation" class="section level2">
+<h2>Skew data and log transformation</h2>
+<p>The <code>carnivores</code> data frame contains brain mass and body mass data for 199 species of carnivorous mammals, originally published as part of a larger dataset by Burger <em>et al.</em> in 2019<sup>1</sup>. The variable for brain mass is called <code>Mean_brain_mass_g</code> and that for body mass is <code>Mean_body_mass_Kg</code>. Plot a scatterplot of brain mass against body mass and have a look at it. This plot is better with open symbols so use the default option: you can remove the <code>pch = 16</code> line. This time I’ll let you load the data from <a href="http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv" class="uri">http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv</a></p>
+<div class="tutorial-exercise" data-label="scatterplot2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot2-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#To load the data you need to use the &quot;read.csv()&quot; function. 
+#Allocate the output of that function to an object called carnivores.
+#
+# For the plot,you can use the same code we used for the previous 
+#example again.
+# You just need to change the two variable names and the axis labels.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot2-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Remember that the two variables are in the carnivores
+#data frame and you need to use the syntax 
+#data frame name, $, variable name
+
+#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot2-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+carnivores &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv&quot;)
+
+plot(
+  carnivores$Mean_brain_mass_g ~ carnivores$Mean_body_mass_Kg,
+  col = &quot;steelblue&quot;,
+  xlab = &quot;Mean body mass (Kg)&quot;,
+  ylab = &quot;Mean brain mass (g)&quot;
+)</code></pre>
+</div>
+<p>What do you see?</p>
+<br>
+<details>
+<p><summary><b>Click here for explanation and more</b></summary> It looks as though there is a increasing, but curved, relationship between brain mass and body mass but the plot is very hard to interpret because almost all of the data are very close to the origin. This is because both brain mass and body mass are strongly positively skewed: here’s a histogram of body mass to make the point.</p>
+<pre class="r"><code>hist(carnivores$Mean_body_mass_Kg,
+     breaks = 30,
+     col = &quot;sienna3&quot;,
+     main = &quot;&quot;,
+     xlab = &quot;Mean body mass (Kg)&quot;
+     )</code></pre>
+<div class="figure">
+<img src="Scatterplots_files/figure-html/unnamed-chunk-8-1.png" alt="**Figure 3** Frequency histogram of body mass for 199 species of carnivore" width="384" />
+<p class="caption">
+<strong>Figure 3</strong> Frequency histogram of body mass for 199 species of carnivore
+</p>
+</div>
+<p>When we have data like this then one way to try to make the plot more readable is to <em>log-transform</em> the data, or alternatively to plot it on a log scale. To log transform it you would use the <code>log()</code> function, so your function call might look like this:</p>
+<pre class="r"><code>plot(log(carnivores$Mean_brain_mass_g) 
+  ~ log(carnivores$Mean_body_mass_Kg),...</code></pre>
+<p>but we’re going to plot the data on a log scale instead. This involves transforming the <em>axes</em> rather than transforming the individual data points, and you can do this in R by adding the <code>log = "xy"</code> argument to your <code>plot()</code> function call. Note that if you just wanted the y-axis on a log scale you could use <code>log = "y"</code> and for just the x-axis <code>log = "x"</code>. Have a go at generating a new plot, but with the axes on a log scale.</p>
+<p><em>TIP</em> if you just add the <code>log = "xy"</code> argument R will plot the graph with scientific notation on the x-axis, so 1e+03 instead of 1000. To stop this, insert this before the <code>plot()</code> command:</p>
+<p><code>options(scipen = 999)</code></p>
+<p>This sets a <em>global option</em> in R and stops it using scientific notation.</p>
+<div class="tutorial-exercise-support" data-label="prepare-carnivores" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>carnivores &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv&quot;)</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="scatterplot3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-carnivores","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot3-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># You can use the same code we used for the previous example again.
+# You just need to add the log = &quot;xy&quot; argument, and add the options... line before the plot function call.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot3-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot3-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+options(scipen = 999) 
+
+plot(
+  carnivores$Mean_brain_mass_g ~ carnivores$Mean_body_mass_Kg,
+  col = &quot;steelblue&quot;,
+  xlab = &quot;Mean body mass (Kg)&quot;,
+  ylab = &quot;Mean brain mass (g)&quot;,
+  log = &quot;xy&quot;
+)</code></pre>
+</div>
+<p>You can see that when these data are plotted on a log-log scale (notice how the x-axis ticks go from an increase of 900g between the first and second and 900Kg between the last two) has completely changed the way the data are visualised, and now we have an impressively tight straight line relationship.</p>
+</details>
+<p><sup>1</sup> Burger, J.R., George, M.A., Leadbetter, C. &amp; Shaikh, F. (2019) The allometry of brain size in mammals. Journal of mammalogy, 100, 276–283.</p>
+</div>
+<div id="section-data-with-structure" class="section level2">
+<h2>Data with structure</h2>
+<p>The longevity dataset has data on maximum recorded lifespan, body mass and various ecological factors for 909 species of birds and mammals, from a publication by Healy <em>et al.</em> (2014)<sup>1</sup>. We’re going to look at the relationship between longevity and body mass for a subset of these data consisting of the data from the mammal orders with more than 30 species represented. This subset of data is in the <code>mammal_longevity</code> data frame which you can load from <a href="http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/mammal_longevity.csv" class="uri">http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/mammal_longevity.csv</a></p>
+<p>The variables you need to plot are <code>maximum_lifespan_yr</code> and <code>mass_g</code>. This time, since the name of the data frame is long and unwieldy, we’ll just use the variable names in the <code>plot()</code> call and then add an argument <code>data = mammal_longevity</code> which will tell R where to look. These data need to be plotted in log space to be visualised as with the previous example, so you’ll need to have the <code>log = "xy"</code> argument in there.</p>
+<p>Don’t forget to put some sensible axis names in using <code>xlab =</code> and <code>ylab =</code>. I’d recommend plotting this with the default plot symbols, so you don’t need to specify anything with <code>pch =</code>.</p>
+<div class="tutorial-exercise" data-label="scatterplot4" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot4-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#To load the data frame, just use the same code
+#as before with the names changed
+
+# You can use the same code we used for the previous 
+# example again, just modified for the present plot.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot4-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot4-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+mammal_longevity &lt;- 
+  read.csv(
+  &quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/mammal_longevity.csv&quot;
+)
+
+options(scipen = 999) 
+
+plot(
+  maximum_lifespan_yr ~ mass_g,
+  col = &quot;steelblue&quot;,
+  xlab = &quot;Mean body mass (g)&quot;,
+  ylab = &quot;Maximum lifespan (years)&quot;,
+  log = &quot;xy&quot;,
+  data = mammal_longevity
+)</code></pre>
+</div>
+<p>Have a good look at the plot. Is there a relationship? Are there any problem data points? Is there any clustering or other evidence of structure?</p>
+<br>
+<details>
+<p><summary><b>Click here for explanation and more</b></summary> This is kind of a weird plot… there seems to be a positive relationship, but there is something strange going on with some of the data for very small mammals giving a “hump” sticking upwards, and there is a bit of clustering in the rest of the data that might represent some underlying structure there. It’s likely that at least some of this structure reflects the phylogenetic relationships in the mammalia, so let’s see what happens when we colour-code our data by order. This can be done very easily by just adding <code>col = order</code> as an argument to your <code>plot()</code> function call, but you have to remember to declare order as a factor first before you start the <code>plot()</code> function. Use this line of code to do this:</p>
+<pre class="r"><code>mammal_longevity$order &lt;-
+  as.factor(mammal_longevity$order)</code></pre>
+<p>We will also need a legend so that we know which colour corresponds to which order, and I’ll give you the code for this, which needs to be added after you’ve finished the <code>plot()</code> instruction.</p>
+<pre class="r"><code>legend(
+  &quot;bottomright&quot;,  #Put the legend in the bottom 
+                  #right corner of the plot
+  fill = 1:5,     #Filled boxes with colours 1 - 5 from 
+                  #the default R colour palette
+  legend = levels(mammal_longevity$order), #Extract the
+                  #names of the levels of the order factor
+  cex = 0.8       #Make the text a bit smaller
+)</code></pre>
+<div class="tutorial-exercise-support" data-label="prepare-mammals" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>##Here because data loaded in an exercise doesn&#39;t stay in the workspace
+
+mammal_longevity &lt;- 
+  read.csv(
+  &quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/mammal_longevity.csv&quot;
+)</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="scatterplot5" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-mammals","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot5-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># You can use the same code we used for the previous 
+# example again, just modified for the present plot.</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot5-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#Check that there&#39;s a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+#
+#Make sure that the code for the legend is after
+#the plot function is complete, so after the 
+#closing bracket</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="scatterplot5-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#This is the solution
+
+mammal_longevity$order &lt;-
+  as.factor(mammal_longevity$order)
+
+options(scipen = 999) 
+
+plot(
+  maximum_lifespan_yr ~ mass_g,
+  col = order,
+  xlab = &quot;Mean body mass (g)&quot;,
+  ylab = &quot;Maximum lifespan (years)&quot;,
+  log = &quot;xy&quot;,
+  data = mammal_longevity
+)
+
+legend(
+  &quot;bottomright&quot;,  #Put the legend in the bottom 
+                  #right corner of the plot
+  fill = 1:5,     #Filled boxes with colours 1 - 5 from 
+                  #the default R colour palette
+  legend = levels(mammal_longevity$order), #Extract the
+                  #names of the levels of the order factor
+  cex = 0.8       #Make the text a bit smaller
+)</code></pre>
+</div>
+<p>This new plot reveals some detailed structure within this dataset related to the relatedness of the animal species plotted. Have a think about what it shows and then have a go at answering these questions. NB Chiroptera are bats and Artiodactyla are even-toed ungulates.</p>
+<div class="panel-heading tutorial-quiz-title">Quiz</div><div class="panel panel-default">
+<div data-label="quiz1-1" class="tutorial-question panel-body">
+<div id="quiz1-1-answer_container" class="shiny-html-output"></div>
+<div id="quiz1-1-message_container" class="shiny-html-output"></div>
+<div id="quiz1-1-action_button_container" class="shiny-html-output"></div>
+<script>if (Tutorial.triggerMathJax) Tutorial.triggerMathJax()</script>
+</div>
+</div>
+</details>
+<p><br><br><br></p>
+<p><sup>1</sup> Healy, K., Guillerme, T., Finlay, S., Kane, A., Kelly, S.B.A., McClean, D., Kelly, D.J., Donohue, I., Jackson, A.L. &amp; Cooper, N. (2014) Ecology and mode-of-life explain lifespan variation in birds and mammals. Proceedings, Biological sciences, 281, 20140298.</p>
+<p><br><br> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</p>
+
+<script type="application/shiny-prerendered" data-context="server-start">
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 5)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+session$onSessionEnded(function() {
+        learnr:::session_stop_event(session)
+      })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot01-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot01-code-editor`)), session)
+output$`tutorial-exercise-scatterplot01-output` <- renderUI({
+  `tutorial-exercise-scatterplot01-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot02-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot02-code-editor`)), session)
+output$`tutorial-exercise-scatterplot02-output` <- renderUI({
+  `tutorial-exercise-scatterplot02-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot1-code-editor`)), session)
+output$`tutorial-exercise-scatterplot1-output` <- renderUI({
+  `tutorial-exercise-scatterplot1-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot2-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot2-code-editor`)), session)
+output$`tutorial-exercise-scatterplot2-output` <- renderUI({
+  `tutorial-exercise-scatterplot2-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot3-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot3-code-editor`)), session)
+output$`tutorial-exercise-scatterplot3-output` <- renderUI({
+  `tutorial-exercise-scatterplot3-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot4-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot4-code-editor`)), session)
+output$`tutorial-exercise-scatterplot4-output` <- renderUI({
+  `tutorial-exercise-scatterplot4-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatterplot5-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatterplot5-code-editor`)), session)
+output$`tutorial-exercise-scatterplot5-output` <- renderUI({
+  `tutorial-exercise-scatterplot5-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_checkbox", label = "quiz1-1", question = structure("Which of the following are true?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_5ff372b",     option = "The artiodactyls and carnivora have relatively long lives for their body weights",     value = "The artiodactyls and carnivora have relatively long lives for their body weights",     label = structure("The artiodactyls and carnivora have relatively long lives for their body weights", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_a36195a",     option = "Rodents live surprisingly long given that most of them are small",     value = "Rodents live surprisingly long given that most of them are small",     label = structure("Rodents live surprisingly long given that most of them are small", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_edbeaac",     option = "On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass",     value = "On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass",     label = structure("On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_39074f3",     option = "From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown",     value = "From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown",     label = structure("From looking at the graph, it doesn&#39;t appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_65b029e",     option = "Some bats live for as long as other mammals that are 10000 times their mass",     value = "Some bats live for as long as other mammals that are 10000 times their mass",     label = structure("Some bats live for as long as other mammals that are 10000 times their mass", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_cd45f73",     option = "The longest lived bat lives for longer than the longest lived rodent",     value = "The longest lived bat lives for longer than the longest lived rodent",     label = structure("The longest lived bat lives for longer than the longest lived rodent", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_d129b39",     option = "The heaviest bat weighs about 300g", value = "The heaviest bat weighs about 300g",     label = structure("The heaviest bat weighs about 300g", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_29c776",     option = "The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls",     value = "The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls",     label = structure("The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_b69483b",     option = "The longest lived species in this dataset is a primate",     value = "The longest lived species in this dataset is a primate",     label = structure("The longest lived species in this dataset is a primate", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz1-1-answer", question = "quiz1-1"), loading = structure("<strong>Loading:<\u002fstrong> \nWhich of the following are true?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 1578499518.26495, options = list()), class = c("learnr_checkbox", "tutorial_question")))
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/bootstrap.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]}},"value":[{"type":"character","attributes":{},"value":["backports","base","checkmate","compiler","datasets","digest","ellipsis","evaluate","fastmap","graphics","grDevices","highr","htmltools","htmlwidgets","httpuv","jsonlite","knitr","later","learnr","magrittr","markdown","methods","mime","promises","R6","Rcpp","rlang","rmarkdown","rprojroot","shiny","stats","stringi","stringr","tools","utils","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["1.1.10","4.0.2","2.0.0","4.0.2","4.0.2","0.6.25","0.3.1","0.14","1.0.1","4.0.2","4.0.2","0.8","0.5.0","1.5.1","1.5.4","1.7.1","1.30","1.1.0.1","0.10.1","1.5","1.1","4.0.2","0.9","1.1.1","2.4.1","1.0.5","0.4.7","2.4","1.3-2","1.5.0","4.0.2","1.5.3","1.4.0","4.0.2","4.0.2","2.3.0","0.18","1.8-4","2.2.1"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+
+</div> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h2 class="title toc-ignore" style="display:none;">Descriptive and Exploratory Statistics 4: Scatterplots</h2>
+<h4 class="author"><em>Rob Knell</em></h4>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</div> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+
+</body>
+
+</html>

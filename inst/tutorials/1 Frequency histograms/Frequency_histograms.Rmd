@@ -135,7 +135,7 @@ For statement 1, the most common response is "Agree" and the histogram shows a f
 
 ## Frequency histograms for continuous data
 
-A lot of the time we are dealing with data that doesn't fit itself nicely into a small number of convenient categories, of course. You might have measurements of size, weight, or time, you might have counts of cells, immunogold staining densities, expression data from a transcriptomics study or estimates of viral load from qPCR --- the kinds of data that biologists deal with are endless. Here's one example from a paper published in 2014 which examined how ecology is related to maximum lifespan in 1368 species of birds and mammals (Healy, K., *et al.* (2014) Ecology and mode-of-life explain lifespan variation in birds and mammals. Proceedings. Biological sciences, 281, 20140298). I've extracted the data for just the mammalian order Artiodactyla (the even-toed ungulates) for which there are 101 different species with known maximum life spans. Here are the first twenty of these in years:
+A lot of the time we are dealing with data that doesn't fit itself nicely into a small number of convenient categories, of course. You might have measurements of size, weight, or time, you might have counts of cells, immunogold staining densities, expression data from a transcriptomics study or estimates of viral load from qPCR --- the kinds of data that biologists deal with are endless. Here's one example from a paper published in 2014 which examined how ecology is related to maximum lifespan in 1368 species of birds and mammals^1^. I've extracted the data for just the mammalian order Artiodactyla (the even-toed ungulates) for which there are 101 different species with known maximum life spans. Here are the first twenty of these in years:
 
 <br>
 
@@ -180,7 +180,9 @@ You can see, for example, that there are two species with maximum lifespans betw
 
 ```{r}
 #Load longevity dataset
-longevity <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/longevity.csv") 
+# longevity <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/longevity.csv")
+# 
+load(data/longevity)
 
 #Make order a factor
 longevity$order <- as.factor(longevity$order) 
@@ -211,6 +213,9 @@ artiodactyls$species[which(
   artiodactyls$maximum_lifespan_yr > 60)]
 ```
 Aha, it's the hippopotamus. This makes sense because hippos are quite unique animals, being in their own family within the artiodactyls, and are very different from other artiodactyls in lots of other ways, including being very much bigger than other animals in the order, with an average weight of between one and one and a half metric tonnes and occasionally reaching more than four tonnes. Rather heavier than the average gazelle.
+
+<br><br><hr>
+1. Healy, K., *et al.* (2014) Ecology and mode-of-life explain lifespan variation in birds and mammals. Proceedings. Biological sciences, 281, 20140298
 
 ## Exercise: draw your own frequency histogram
 

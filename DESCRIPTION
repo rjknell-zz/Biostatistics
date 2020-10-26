@@ -1,0 +1,9 @@
+Package: Biostatistics
+Type: Package
+Title: LearnR Biostatistics Tutorials
+Version: 0.1.0
+Author: Rob Knell
+Maintainer: <r.knell@qmul.ac.uk>
+Description: LearnR tutorials for biostatistatics. Subjects range from basic descriptive statistics through to complex linear modelling.
+Encoding: UTF-8
+LazyData: true

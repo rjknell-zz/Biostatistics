@@ -15,18 +15,13 @@ library(learnr)
 library(gplots)
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
-mouse_movement <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/McCarthy_mice_activity.csv",
-    stringsAsFactors = TRUE
-  )
 
-bacteria <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv",
-  )
 
-bacteria1 <- subset(bacteria, Line ==1)
+load("mouse_activity.rda")
+
+load("zebra_bacteria.rda")
+
+bacteria1 <- subset(zebra_bacteria, Line ==1)
 ```
 
 ## Adding extra variables to a linear model
@@ -45,29 +40,26 @@ In this tutorial we'll look at analysing linear models with more than one factor
 
 ## Two-factor linear model example
 
-The data we'll be looking at here come from a study on the effect that paternal exposure to nicotine has on mice, looking particularly at the behaviour of their descendants, as published by McCarthy and co-authors in 2018^1^. The dataset we will use is a small subset of what was presented in their paper, and deals with  the spontaneous locomotor activity that the F1 offspring of nicotine exposed or control males mated with unexposed females exhibited over a 12 hour period. Locomotor activity was measured by placing the animals in a testing chamber with a series of infra-red beams arranged in a grid, and each time a beam was broken this was logged as a single locomotory event. Our dataset includes data from both male and female F1 offspring.
-
-<br>
-
-Let's load it from github and check its structure.
+The data we'll be looking at here come from a study on the effect that paternal exposure to nicotine has on mice, looking particularly at the behaviour of their descendants, as published by McCarthy and co-authors in 2018^1^. The dataset we will use is a small subset of what was presented in their paper, and deals with  the spontaneous locomotor activity that the F1 offspring of nicotine exposed or control males mated with unexposed females exhibited over a 12 hour period. Locomotor activity was measured by placing the animals in a testing chamber with a series of infra-red beams arranged in a grid, and each time a beam was broken this was logged as a single locomotory event. Our dataset (`mouse_activity`) includes data from both male and female F1 offspring.The first thing to do is to check its structure.
 
 ```{r}
-
-mouse_movement <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/McCarthy_mice_activity.csv",
-    stringsAsFactors = TRUE
-  )
-
-str(mouse_movement)
+str(mouse_activity)
 ```
 
-Because we specified `stringsAsFactors = TRUE` as an argument to `read.csv()` both `Treatment` and `Sex`have been imported as factors. `SLA` (Spontaneous Locomotory Activity) is our response variable and is the count of all the recorded times an infra-red beam was broken during the 12-hour period. `Sex` is the sex of the F1 mouse in question, and `Treatment` is the treatment the father of the mouse was exposed to: "Water" if the mouse was given plain drinking water and "Nicotine" if the mouse was given drinking water containing 200µg/mL nicotine for 12 weeks. Let's look at our sample sizes for each factor combination.
+`SLA` (Spontaneous Locomotory Activity) is our response variable and is the count of all the recorded times an infra-red beam was broken during the 12-hour period. `Sex` is the sex of the F1 mouse in question, and `Treatment` is the treatment the father of the mouse was exposed to: "Water" if the mouse was given plain drinking water and "Nicotine" if the mouse was given drinking water containing 200µg/mL nicotine for 12 weeks. Both `Treatment` and `Sex` are character vectors but need to be sepcified as factors.
+
+```{r}
+mouse_activity$Treatment <- as.factor(mouse_activity$Treatment)
+
+mouse_activity$Sex <- as.factor(mouse_activity$Sex)
+```
+
+Let's look at our sample sizes for each factor combination.
 
 <br>
 
 ```{r}
-table(mouse_movement$Sex:mouse_movement$Treatment)
+table(mouse_activity$Sex:mouse_activity$Treatment)
 ```
 
 
@@ -76,7 +68,7 @@ The data are somewhat unbalanced, with sample sizes ranging from 11 to 18 and ov
 ```{r fig.cap = "**Figure 1.** Boxplot showing Spontaneous Locomotor Activity (SLA) as measured in IR beam triggers over 12 hours for mice with paternal expsoure to either nicotine or water."}
 
 boxplot(SLA ~  Treatment * Sex, 
-        data = mouse_movement,
+        data = mouse_activity,
         xlab = "Treatment & Sex",
         ylab = "SLA(movements/12h)")
 ```
@@ -106,13 +98,13 @@ If we were to want to add a third variable (e.g.Diet) we could do it like this:
 We'll fit a model with both main effects and the interaction, and then bring up an ANOVA table to get an idea of the statistical significance of our explanatory variables.
 
 ```{r eval = FALSE}
-mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_movement)
+mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_activity)
 
 anova(mouse1)
 ```
 
 ```{r echo = FALSE}
-mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_movement)
+mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_activity)
 
 print(anova(mouse1))
 ```
@@ -162,7 +154,7 @@ Here's the ANOVA table for the model with the explanatory variables in the oppos
 
 ```{r eval = FALSE}
 # Fit model with Sex first instead of treatment
-mouse2 <- lm(SLA ~ Sex * Treatment, data = mouse_movement)
+mouse2 <- lm(SLA ~ Sex * Treatment, data = mouse_activity)
 
 # ANOVA table for second model
 anova(mouse2)
@@ -170,7 +162,7 @@ anova(mouse2)
 
 ```{r echo = FALSE}
 # Fit model with Sex first instead of treatment
-mouse2 <- lm(SLA ~ Sex *Treatment, data = mouse_movement)
+mouse2 <- lm(SLA ~ Sex *Treatment, data = mouse_activity)
 
 # ANOVA table for second model
 print(anova(mouse2))
@@ -207,13 +199,13 @@ This supports what we've already calculated using the type I sums which are the 
 Since the interaction is very far from significant, and there's nothing to indicate that there is an important interaction effect here, we can consider generating a new and more parsimonious model without the interaction term. There is more in the upcoming tutorial on model selection on the reasoning behind this and when it might or might not be justified.
 
 ```{r eval = FALSE}
-mouse3 <- lm(SLA ~ Treatment + Sex, data = mouse_movement)
+mouse3 <- lm(SLA ~ Treatment + Sex, data = mouse_activity)
 
 Anova(mouse3, type = "III")
 ```
 
 ```{r echo = FALSE}
-mouse3 <- lm(SLA ~ Treatment + Sex, data = mouse_movement)
+mouse3 <- lm(SLA ~ Treatment + Sex, data = mouse_activity)
 
 print(Anova(mouse3, type = "III"))
 ```
@@ -235,14 +227,14 @@ summary(mouse3)
 We have an ANOVA with two factors, each of which has two treatments. This gives us a fairly straightforward coefficients table. As with the single factor ANOVA models, the first row of the coefficients table is labelled `(Intercept)`. Instead of telling us the estimated mean for the treatment that comes first in the alphabet this is now the estimated mean for the treatment combination with the levels for each factor that are first alphabetically. Our factor levels are
 
 ```{r}
-levels(mouse_movement$Treatment)
-levels(mouse_movement$Sex)
+levels(mouse_activity$Treatment)
+levels(mouse_activity$Sex)
 ```
 
 So the intercept for this model is the estimated mean for female mice with fathers treated with nicotine. We can check this by calculating the mean directly.
 
 ```{r}
-with(mouse_movement,
+with(mouse_activity,
      mean(SLA[Sex == "Female" & Treatment == "Nicotine"]))
 ```
 
@@ -292,7 +284,7 @@ library(gplots)
 # than the defaults (cex = 2.5, barwidth = 2). 
 plotmeans(
   SLA ~ interaction(Treatment,Sex),
-  data = mouse_movement,
+  data = mouse_activity,
   n.label = FALSE,
   pch = 18,
   cex = 2.5,
@@ -323,7 +315,7 @@ plotmeans(
 
 points(
   SLA ~ jitter(as.numeric(interaction(Treatment,Sex)), 0.6),
-  data = mouse_movement,
+  data = mouse_activity,
   pch = 16,
   col = "#00777788",
   cex = 1.2
@@ -355,41 +347,18 @@ axis(
 
 Here, we will use some data from a study on bacterial adaptation to host gut environments originally published in 2018 by a group of researchers at The University of Eugene, Oregon and the Canadian Institute for Advanced Research^2^. They looked, among other things, at the competitive ability a bacterium called *Aeromonas veronii* after either 4 or 18 passages through the gut of an otherwise germ-free larval zebrafish. Competitive ability was measured *in vivo* by incoulating a larval zebrafish with a dose of both the experimental line of bacteria and an ancestral line which was tagged with Green Flourescent Protein for 3 days, following which the gut contents were homogenised and the homogenate plated onto tryptone soy agar. After a suitable incubation period the colonies of each strain were counted using a flourescence microscope to distinguish them and a "competitive index" calculated as the ratio of the number of colonies for the adapted line to the colonies from the ancestral line.
 
-The particular experiment which we will look at here is one in which the experimenters compared the competitive ability of bacteria in the host strain which they had been evolving (WT hosts) with the competitive ability of the same bacteria but competing in hosts of a different genetic background (an immunodeficient *myd88~-~* mutant). They also compared the competitive abilities of bacteria which had had a short period of adaptation (4 passages) with bacteria which had a longer period (18 passages). The data are on github at this URL:
+The particular experiment which we will look at here is one in which the experimenters compared the competitive ability of bacteria in the host strain which they had been evolving (WT hosts) with the competitive ability of the same bacteria but competing in hosts of a different genetic background (an immunodeficient *myd88~-~* mutant). They also compared the competitive abilities of bacteria which had had a short period of adaptation (4 passages) with bacteria which had a longer period (18 passages). The data are loaded as the data frame `zebra_bacteria`. We can check its structure with `str()`.
 
-https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv
-
-Start by loading the data into R (I suggest you save the imported dataset as `bacteria`) and checking the dataset structure using `str`
-
-
-```{r load_bacteria, exercise = TRUE}
-
-
-```
-
-```{r load_bacteria-hint-1}
-# Here's a code framework to help you
-
-object_name <- read.csv("file_location")
-
-str(object_name)
-```
-
-
-```{r load_bacteria-hint-2}
-# This is the solution
-
-bacteria <- read.csv(
-  "https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv")
-
-str(bacteria)
-```
-
-
-The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repeated the experiment three times with three independently evolved lines of bacteria. For the present we'll just analyse the data from line 2 but we will look at a model including this factor in the tutorial on model selection. Let's start by using `subset()` to select just the data associated with Line 2. We'll call our new data frame `bacteria1`.
 
 ```{r}
-bacteria1 <- subset(bacteria, Line == 2)
+str(zebra_bacteria)
+```
+
+
+The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repeated the experiment three times with three independently evolved lines of bacteria. For the present we'll just analyse the data from line 1 but we will look at a model including this factor in the tutorial on model selection. Let's start by using `subset()` to select just the data associated with Line 1. We'll call our new data frame `bacteria1`.
+
+```{r}
+bacteria1 <- subset(zebra_bacteria, Line == 1)
 ```
 
 None of our explanatory vectors are currently factors but we need both `Host` and `Passage` to be specified as such. You can do this using the `as.factor()` function. I've done one, you'll need to do the other. Once you've done that check the data frame again using `str()`.
@@ -560,7 +529,7 @@ What do the diagnostic plots tell us? More than one answer can be correct.
 ```{r diagnostics-quiz, echo=FALSE}
   question(
     "Which of the following is correct?",
-    answer("Data points 44, 95 and 115 are identified as outliers and should be removed", message = "Answer 1. R will always identify the three residuals with the largest absolute values. That doesn't mean they are problematic and in this case there's no reason to be concerned.     "),
+    answer("Data points 25, 33 & 44 are identified as outliers and should be removed", message = "Answer 1. R will always identify the three residuals with the largest absolute values. That doesn't mean they are problematic and in this case there's no reason to be concerned.     "),
     answer("Because the points in the qq plot are all close to the line of unity we have a residual distribution which is very close to a normal distribution", correct = TRUE),
     answer("The systematic deviation from the line in the qq plot could be because the data are not independent", message = "Answer 3. The qq plot can't tell you anything about the independence of your data points, it only gives you information on how similar your residuals are to a normal distribution      "),
     answer("The plot of residuals versus fitted values indicates potentially important problems with heteroskedasticity", message = "Answer 4. The amount of dispersion in the residuals is roughly the same across the plot, indicating that there's no substantial change in the variance as the fitted values change      "),
@@ -657,7 +626,7 @@ library(gplots)
 
 plotmeans(
   SLA ~ interaction(Treatment,Sex),
-  data = mouse_movement,
+  data = mouse_activity,
   n.label = FALSE,
   pch = 18,
   col = "darkblue",

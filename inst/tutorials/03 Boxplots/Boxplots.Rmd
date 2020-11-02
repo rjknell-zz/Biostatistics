@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # worldbank <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv")
 
-worldbank <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/worldbank.csv")
+load("worldbank.rda")
 
 
 
@@ -34,17 +34,7 @@ A boxplot is a way of visualising data which displays a lot of information while
 ![](https://youtu.be/lL4XhpzbWA0)
 
 
-Just to recap the video content, let's look at the data on population growth from the worldbank dataset, a set of data on 186 countries from 2014 which I compiled from data published by the World Bank. We'll start by loading the data and then looking at a frequency histogram.
-
-To load the data into R:
-
-```{r eval = FALSE}
-worldbank <- read.csv(
-  "http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv"
-)
-```
-
-Now to plot the histogram.
+Just to recap the video content, let's look at the data on population growth from the `worldbank` dataset, a set of data on 186 countries from 2014 which I compiled from data published by the World Bank. The dataset is already loaded and We'll start by looking at a frequency histogram.
 
 ```{r fig.cap = "Frequency histogram of annual percentage population growth for 186 countries", fig.height = 6}
 

@@ -124,7 +124,7 @@ points(Y3 ~ X1,
 )
 
 legend("topleft",
-       legend = c("Normal", "t 5df", "t 2f"),
+       legend = c("Normal", "t 5df", "t 2df"),
        lty = 1,
        col = c("black", "firebrick4", "steelblue")
 )

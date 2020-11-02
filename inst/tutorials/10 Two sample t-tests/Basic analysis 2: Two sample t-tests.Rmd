@@ -14,7 +14,8 @@ description: >
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
 
-weaver <- read.csv("https://github.com/rjknell/Basic_stats/raw/master/data/Cram_bird_repro_costs.csv")
+load("weaver.rda")
+
 weaver$Treatment <- as.factor(weaver$Treatment)
 
 weaver_small <- subset(weaver, weaver$GrpSize <= 4)
@@ -36,16 +37,16 @@ Reproduction is costly to the individuals reproducing: this is widely accepted i
 
 Data on the role of oxidative stress during breeding is rare, especially from field systems, but in 2015 Cram and co-authors^1^ published a study of the white-browed sparrow weaver, *Plocepasser mahali* which addressed this. White-browed sparrow weavers are cooperatively breeding Southern African birds which live in groups of 2-12 birds. One pair in each group is the dominant pair which monopolises breeding, and the other birds provide assistance by helping provision the young as well as assisting with other tasks.
 
-<img src="https://github.com/rjknell/Basic_stats/raw/master/inst/tutorials/Basic%20analysis%202%20Two%20sample%20t-tests/white_browed_sparrow_weaver.jpg" width = 600>
+![](images/white_browed_sparrow_weaver.jpg){width="400"}
+
 
 **Figure 1** White browed sparrow weaver. Photo copyright Peter Steward, released under an [Attribution Non-Commercial 2.0 Creative Commons license](https://creativecommons.org/licenses/by-nc/2.0/).
 
 Cram *et al.* carried out an experiment where some nests had eggs removed, meaning that the costs of reproduction were reduced for the birds in the group associated with that nest, and other control nests were left as they were. The birds were caught and a variety of measures taken during the breeding season, including weight, the concentration of malondialdehyde (MDA, a product of lipid peroxidation and an indicator of oxidative stress) and superoxide dismutase activity (SOD, an enzyme which is important in antioxidant defence). The idea that they wished to test was that birds rearing young in small groups (four birds or fewer) should pay more costs than birds rearing young in large groups (more than four birds) and that this would be reflected in the response to removing the clutch from the nest: in small groups the effect of egg removal, which removes the costs associated with rearing young, would be stronger than in large groups.
 
-The actual analysis carried out by Cram *et al.* involved a complex model fitting process which took account of some non-independence in the data, but here we will focus on using two-sample t-tests to compare responses from birds in small or large groups to clutch removal. Let's start with the weights of the birds. We can import the dataframe, and we will declare the `Treatment` variable to be a factor:
+The actual analysis carried out by Cram *et al.* involved a complex model fitting process which took account of some non-independence in the data, but here we will focus on using two-sample t-tests to compare responses from birds in small or large groups to clutch removal. Let's start with the weights of the birds. The dataframe is loaded as `weaver` and we need to declare the `Treatment` variable to be a factor:
 
 ```{r eval = FALSE}
-weaver <- read.csv("https://github.com/rjknell/Basic_stats/raw/master/data/Cram_bird_repro_costs.csv")
 
 weaver$Treatment <- as.factor(weaver$Treatment)
 ```

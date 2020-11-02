@@ -15,11 +15,11 @@ description: >
 library(learnr)
 library(gplots)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
-ragwort <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/Wang_et_al_plant_only.csv",
-    stringsAsFactors = TRUE
-  )
+
+load("ragwort.rda")
+
+ragwort$inoculum <- as.factor(ragwort$inoculum)
+
 ```
 
 
@@ -35,7 +35,7 @@ This set of tutorials will teach you about one of the most important statistical
 The data we're going to be analysing come from a paper by Minggang Wang and coauthors published in the *New Phytologist* in 2018^1^. Wang *et al.* were studying the phenomenon of *plant-soil feedback* (PSF) whereby aspects of plant biology are affected by the presence of other plants in the soil before the one in question. The study organism in this case is ragwort, *Jacobea vulgaris*, an important and toxic weed in arable fields in Europe and is also highly invasive in other parts of the world. Ragwort is known to be strongly affected by PSF with plants grown in soil that has previously had plants of the same species growing in it exhibiting severely reduced growth.
 
 
-<img src="https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%201%20Single%20factor%20ANOVA/ragwort.jpeg" width = "400">
+![](images/ragwort.jpeg){width="400"}
 
 
 A ragwort plant *Jacobea vulgaris*. Photo R. Knell 2020.

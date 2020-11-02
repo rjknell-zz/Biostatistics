@@ -44,7 +44,7 @@ Fungal parasites of insects are fascinating to biologists for many reasons, one 
 
 One of the best known examples of such behavioural manipulation comes from a genus of fungus called *Ophiocordyceps*, which infects ants in tropical forests. The dying, infected ants (so-called "zombie ants") climb up vegetation and then bite onto a leaf or a stalk. This means that the sporulating cadaver is firmly attached to the vegetation, and the height gained means that the infectious spores will rain down onto the ants foraging on the forest floor.
 
-<img src="https://github.com/rjknell/Basic_stats/raw/master/inst/tutorials/Basic%20Analysis%201%20Paired-sample%20t-tests%20/Ophiocordyceps.png" width="600"/>
+![](images/Ophiocordyceps.png){width=500}
 
 **Figure 1: *Ophiocordyceps* infected ants**. a) Recently dead infected ant (*Camponotus rufipes*) holding onto vegetation with its mandibles. b) Ant approximately a week after death with mandibles clasping a leaf. The structure emerging from behind its head (labelled *st* for *stroma*) is the developing fungal fruiting body. c) Ant between one and two weeks after death with a fully developed fruiting body labeled *as* for *ascoma*. Image from Andriolli, F.S., Ishikawa, N.K., Vargas-Isla, R., Cabral, T.S., de Bekker, C. & Baccaro, F.B. (2019) Do zombie ant fungi turn their hosts into light seekers? Behavioral ecology 30, 609--616.
 

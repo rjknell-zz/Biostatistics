@@ -14,7 +14,7 @@ description: >
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
 
-mhc <- read.csv("https://github.com/rjknell/Basic_stats/raw/master/data/manczinger_2019.csv")
+load("mhc.rda")
 ```
 
 ## Correlation analysis explained
@@ -29,13 +29,7 @@ The major Histocompatibility complex (MHC) is a region of the vertebrate genome 
 
 We'll look at one of their two response variables the *in-vitro* promiscuity levels for the HLA-DRB1 gene, an estimate of how broad the antigen binding capabilities are at a population level. There are two explanatory variables, extracellular pathogen diversity and intracelullar pathogen diversity. Since intracellular pathogens are not exposed to the aspects of the immune response associated with the MHC, the prediction to be tested is that HLA-DRB1 promiscuity should correlate with extracellular but not intracellular pathogen diversity.
 
-We can load the data into a data frame called `mhc`
-
-```{r eval = FALSE}
-mhc <- read.csv("https://github.com/rjknell/Basic_stats/raw/master/data/manczinger_2019.csv")
-```
-
-As always, we need to check our data have loaded properly. Use `str()` to check the structure of the dataset.
+The data are loaded as a dataframe called `mhc`. As always, we need to check our data have loaded properly. Use `str()` to check the structure of the dataset.
 
 ```{r mhc_structure, exercise = TRUE}
 

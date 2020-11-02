@@ -211,7 +211,7 @@ Here, positive values indicate that there is a positive association: so cells wi
 
 Many reef fish have larval stages which develop in open water and only settle onto a reef as they develop towards adulthood. As part of this process they make choices about where to settle based on sensory cues that might include both visual and olfactory components. To try to understand this process, John Majoris and co-workers published a study in 2018^2^ in which they tested the habitat preferences of young neon gobies *Elacatinus lori* on the barrier reef in Belize. Adult *E. lori* live inside tube sponges, and Majoris *et al.* collected freshly settled *E. lori* individuals and carried out a series of choice tests to examine how they choose sponges to settle in.
 
-![](https://github.com/rjknell/Basic_stats/raw/master/inst/tutorials/Basic%20Analysis%203%20Chi-square%20tests/E_lori.png){width="400"}
+![](images/E_lori.png){width="400"}
 
 **Figure 1** Top panel: Neon goby, *Elacatinus lori*, wikimedia commons. Bottom panels: two yellow tube sponges, typical of the habitat where the fish lives. Photos from Majoris *et al*, 2018.
 

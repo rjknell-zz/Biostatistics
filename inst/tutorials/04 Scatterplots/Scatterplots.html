@@ -126,17 +126,14 @@ $(document).ready(function () {
 </div>
 <div id="section-scatterplot-basics" class="section level2">
 <h2>Scatterplot basics</h2>
-<p>Here’s an example of a scatterplot, and the R code used to draw it. The <code>plot()</code> function in R will generate a scatterplot if you give it two numerical variables. You might notice the way that the two variables are entered as a <em>formula</em> so the y-axis variable comes first, followed by the x-axis one and they are separated by a tilde <code>~</code>. You can also specify <code>x=</code> and <code>y=</code> as separate arguments for a plot and you’ll get the same result. The best thing to do is to pick one method and stick with it so there is no confusion. The data are from a study published by Charters <em>et al.</em> in 2018<sup>1</sup> looking at physical performance in <a href="https://en.wikipedia.org/wiki/Northern_quoll">Northern Quolls</a>, a small marsupial predator found in Australia. Note that both grasping force and maximum oxygen uptake have been ‘standardised’ — converted to variables with a mean of zero and a standard deviation of 1 — this is for a multidimensional analysis that the authors did, but it doesn’t really affect us here except that units don’t really make much sense for these variables.</p>
-<p>We start out by loading the data which I have on a web server</p>
-<pre class="r"><code>quolls &lt;- read.csv(&quot;https://github.com/rjknell/Biostatistics/raw/main/data/quolls.csv&quot;)</code></pre>
-<p>Now to draw the scatterplot</p>
+<p>Here’s an example of a scatterplot, and the R code used to draw it. The <code>plot()</code> function in R will generate a scatterplot if you give it two numerical variables. You might notice the way that the two variables are entered as a <em>formula</em> so the y-axis variable comes first, followed by the x-axis one and they are separated by a tilde <code>~</code>. You can also specify <code>x=</code> and <code>y=</code> as separate arguments for a plot and you’ll get the same result. The best thing to do is to pick one method and stick with it so there is no confusion. The data are from a study published by Charters <em>et al.</em> in 2018<sup>1</sup> looking at physical performance in <a href="https://en.wikipedia.org/wiki/Northern_quoll">Northern Quolls</a>, a small marsupial predator found in Australia. Note that both grasping force and maximum oxygen uptake have been ‘standardised’ — converted to variables with a mean of zero and a standard deviation of 1 — this is for a multidimensional analysis that the authors did, but it doesn’t really affect us here except that units don’t really make much sense for these variables. The data are loaded as the <code>quolls</code> dataframe.</p>
 <pre class="r"><code>plot(quolls$grasp ~ quolls$Max_O2_consump, #Variables to be plotted
      pch = 16,  #Plot with solid circles for plot characters
      col = &quot;steelblue&quot;, #Nice colour for plotting points
      xlab = &quot;Maximum oxygen consumption&quot;, #x-axis label
      ylab = &quot;Grasping force&quot;, #y-axis label
 )</code></pre>
-<p><img src="Scatterplots_files/figure-html/unnamed-chunk-3-1.png" width="480" /></p>
+<p><img src="Scatterplots_files/figure-html/unnamed-chunk-2-1.png" width="480" /></p>
 <p>You can look at this scatterplot and you can see a pattern: the animals with high levels of oxygen consumption have stronger bite forces than do the animals with low levels of oxygen consumption — there is a <em>positive correlation</em>. You can also see that there is a fair amount of noise in the data, so there are some animals with high oxygen consumption and low grasping force, and some with low oxygen consumption and fairly high grapsing forces. Overall though the pattern is reasonably clear (if you’re an ecologist you’d be pleased with this degree of correlation, most physicists on the other hand would give up and do something else if they got data like these). There are no obvious problem data points, and there is no indication of a curved relationship, or any obvious clustering that might indicate groups in the data. I’d happily go on to do further analysis on these data without any concerns.</p>
 <br><br>
 <hr>
@@ -146,14 +143,10 @@ $(document).ready(function () {
 </div>
 <div id="section-two-simple-scatterplots" class="section level2">
 <h2>Two simple scatterplots</h2>
-<p>The data set malawi_carbon contains data on two lung immunity measures (oxidative burst activity and phagocytic activity) from people exposed to chronic carbon particulates in their homes in Malawi. These data were originally published by Rylance <em>et al.</em> (2015)<sup>1</sup> as part of a study of how exposure to smoke from cooking fires affects lung function. Let’s load the data and have a look at how these two variables relate to particulate exposure.</p>
-<pre class="r"><code>malawi_carbon &lt;- read.csv(&quot;https://github.com/rjknell/Biostatistics/raw/main/data/malawi_carbon.csv&quot;)</code></pre>
+<p>The data set <code>malawi_carbon</code> contains data on two lung immunity measures (oxidative burst activity and phagocytic activity) from people exposed to chronic carbon particulates in their homes in Malawi. These data were originally published by Rylance <em>et al.</em> (2015)<sup>1</sup> as part of a study of how exposure to smoke from cooking fires affects lung function. Let’s have a look at how these two variables relate to particulate exposure.</p>
 <p>Start with the phagocytic activity data. Use the R code we used in the previous example as a guide. You’ll need to use the <code>plot()</code> function and to specify the x- and y- variables by either putting in a formula of the form <code>y~x</code> or by specifying <code>x=</code> and <code>y=</code> arguments. The variables in question are called <code>log_carbon</code>, which should go on the x-axis, (the carbon data has been log transformed: more on this later) and the variable for the phagocytic activity is called <code>phagocytosis</code> and this should go on the y-axis. Both of them are in the <code>malawi_carbon</code> data frame so you need either to refer to them using the dataframe$variable syntax or just give the names of the variables but add a <code>data = malawi_carbon</code> argument to your function call. Finally, you’ll need to put in some sensible x-axis and y-axis labels using <code>xlab = ""</code> and <code>ylab = ""</code>. I suggest “Log carbon score” for the x-axis and “Phagocytosis activity (%)” for the y-axis — the phagocytosis score is actually a the percentage of macrophages which took up flourescent silica beads.</p>
-<div class="tutorial-exercise-support" data-label="prepare-carbon" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>malawi_carbon &lt;- read.csv(&quot;https://github.com/rjknell/Biostatistics/raw/main/data/malawi_carbon.csv&quot;)</code></pre>
-</div>
 <div class="tutorial-exercise" data-label="scatterplot01" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="8">
-<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-carbon","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot01-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#You can specify the x- and y- variables like this:
@@ -191,7 +184,7 @@ plot(phagocytosis ~ log_carbon,
 <p>Have a look at the plot. Do you see any relationship between carbon exposure and phagocytic activity? Are there any clusters of data or obviously problematic data points with unlikely values? Don’t overthink this: your first impressions will probably be correct.</p>
 <p>Noew let’s plot our other measure of lung immune function, oxidative burst activity, against carbon score. You can use the same code as before but you need to replace <code>phagocytosis</code> with <code>oxidative_burst</code> and you’ll need a new y-axis label. I suggest “Oxidative burst index”: it doesn’t really have units.</p>
 <div class="tutorial-exercise" data-label="scatterplot02" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="8">
-<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-carbon","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot02-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#You can specify the x- and y- variables like this:
@@ -252,14 +245,10 @@ The p-value for the correlation is 0.034 which is indeed less than the cut-off f
 </div>
 <div id="section-increasing-variance" class="section level2">
 <h2>Increasing variance</h2>
-<p>Now we’ll use a dataframe loaded called <code>worldbank</code> which has data for 186 countries from 2014 as published by the World Bank. Let’s load the data into R.</p>
-<pre class="r"><code>worldbank &lt;- read.csv(&quot;https://github.com/rjknell/Biostatistics/raw/main/data/worldbank.csv&quot;)</code></pre>
+<p>Now we’ll use a dataframe loaded called <code>worldbank</code> which has data for 186 countries from 2014 as published by the World Bank.</p>
 <p>One of the variables is called <code>Forest_area</code> and represents the percentage of the land surface for each nation which is forested. A second variable is called <code>Precipitation</code> and is the annual precipitation in mm. Try drawing a scatterplot of forest area, on the y-axis, versus precipitation on the x-axis. We’ll make the plot look a bit nicer by using filled circles for our plot symbols, which we can do by using the argument <code>pch = 16</code>. We’ll give them some colour as well: I suggest <code>aquamarine4</code> or <code>steelblue</code> which we can specify by using the <code>col = "colour name"</code> argument. Don’t forget those quote marks.</p>
-<div class="tutorial-exercise-support" data-label="prepare-worldbank" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>worldbank &lt;- read.csv(&quot;https://github.com/rjknell/Biostatistics/raw/main/data/worldbank.csv&quot;)</code></pre>
-</div>
 <div class="tutorial-exercise" data-label="scatterplot1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="8">
-<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-worldbank","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot1-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code># You can use the same code we used for the first example.
@@ -294,16 +283,14 @@ The spread of data indicates a positive correlation: in general nations with low
 </div>
 <div id="section-skew-data-and-log-transformation" class="section level2">
 <h2>Skew data and log transformation</h2>
-<p>The <code>carnivores</code> data frame contains brain mass and body mass data for 199 species of carnivorous mammals, originally published as part of a larger dataset by Burger <em>et al.</em> in 2019<sup>1</sup>. The variable for brain mass is called <code>Mean_brain_mass_g</code> and that for body mass is <code>Mean_body_mass_Kg</code>. Plot a scatterplot of brain mass against body mass and have a look at it. This plot is better with open symbols so use the default option: you can remove the <code>pch = 16</code> line. This time I’ll let you load the data from <a href="https://github.com/rjknell/Biostatistics/raw/main/data/carnivores.csv" class="uri">https://github.com/rjknell/Biostatistics/raw/main/data/carnivores.csv</a></p>
+<p>The <code>carnivores</code> data frame contains brain mass and body mass data for 199 species of carnivorous mammals, originally published as part of a larger dataset by Burger <em>et al.</em> in 2019<sup>1</sup>. The variable for brain mass is called <code>Mean_brain_mass_g</code> and that for body mass is <code>Mean_body_mass_Kg</code>. Plot a scatterplot of brain mass against body mass and have a look at it. This plot is better with open symbols so use the default option: you can remove the <code>pch = 16</code> line.</p>
 <div class="tutorial-exercise" data-label="scatterplot2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="8">
 <script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot2-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>#To load the data you need to use the &quot;read.csv()&quot; function. 
-#Allocate the output of that function to an object called carnivores.
-#
-# For the plot,you can use the same code we used for the previous 
+<pre class="text"><code># For the plot,you can use the same code we used for the previous 
 #example again.
+#
 # You just need to change the two variable names and the axis labels.</code></pre>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot2-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
@@ -317,8 +304,6 @@ The spread of data indicates a positive correlation: in general nations with low
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot2-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution
-
-carnivores &lt;- read.csv(&quot;https://github.com/rjknell/Biostatistics/raw/main/data/carnivores.csv&quot;)
 
 plot(
   carnivores$Mean_brain_mass_g ~ carnivores$Mean_body_mass_Kg,
@@ -338,7 +323,7 @@ plot(
      xlab = &quot;Mean body mass (Kg)&quot;
      )</code></pre>
 <div class="figure">
-<img src="Scatterplots_files/figure-html/unnamed-chunk-8-1.png" alt="**Figure 3** Frequency histogram of body mass for 199 species of carnivore" width="384" />
+<img src="Scatterplots_files/figure-html/unnamed-chunk-4-1.png" alt="**Figure 3** Frequency histogram of body mass for 199 species of carnivore" width="384" />
 <p class="caption">
 <strong>Figure 3</strong> Frequency histogram of body mass for 199 species of carnivore
 </p>
@@ -350,11 +335,8 @@ plot(
 <p><em>TIP</em> if you just add the <code>log = "xy"</code> argument R will plot the graph with scientific notation on the x-axis, so 1e+03 instead of 1000. To stop this, insert this before the <code>plot()</code> command:</p>
 <p><code>options(scipen = 999)</code></p>
 <p>This sets a <em>global option</em> in R and stops it using scientific notation.</p>
-<div class="tutorial-exercise-support" data-label="prepare-carnivores" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>carnivores &lt;- read.csv(&quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv&quot;)</code></pre>
-</div>
 <div class="tutorial-exercise" data-label="scatterplot3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="10">
-<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-carnivores","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot3-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code># You can use the same code we used for the previous example again.
@@ -388,17 +370,14 @@ plot(
 </div>
 <div id="section-data-with-structure" class="section level2">
 <h2>Data with structure</h2>
-<p>The longevity dataset has data on maximum recorded lifespan, body mass and various ecological factors for 909 species of birds and mammals, from a publication by Healy <em>et al.</em> (2014)<sup>1</sup>. We’re going to look at the relationship between longevity and body mass for a subset of these data consisting of the data from the mammal orders with more than 30 species represented. This subset of data is in the <code>mammal_longevity</code> data frame which you can load from <a href="https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv" class="uri">https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv</a></p>
+<p>The longevity dataset has data on maximum recorded lifespan, body mass and various ecological factors for 909 species of birds and mammals, from a publication by Healy <em>et al.</em> (2014)<sup>1</sup>. We’re going to look at the relationship between longevity and body mass for a subset of these data consisting of the data from the mammal orders with more than 30 species represented. This subset of data is in the <code>mammal_longevity</code> data frame.</p>
 <p>The variables you need to plot are <code>maximum_lifespan_yr</code> and <code>mass_g</code>. This time, since the name of the data frame is long and unwieldy, we’ll just use the variable names in the <code>plot()</code> call and then add an argument <code>data = mammal_longevity</code> which will tell R where to look. These data need to be plotted in log space to be visualised as with the previous example, so you’ll need to have the <code>log = "xy"</code> argument in there.</p>
 <p>Don’t forget to put some sensible axis names in using <code>xlab =</code> and <code>ylab =</code>. I’d recommend plotting this with the default plot symbols, so you don’t need to specify anything with <code>pch =</code>.</p>
 <div class="tutorial-exercise" data-label="scatterplot4" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="15">
 <script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot4-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>#To load the data frame, just use the same code
-#as before with the names changed
-
-# You can use the same code we used for the previous 
+<pre class="text"><code># You can use the same code we used for the previous 
 # example again, just modified for the present plot.</code></pre>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot4-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
@@ -408,11 +387,6 @@ plot(
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot4-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution
-
-mammal_longevity &lt;- 
-  read.csv(
-  &quot;https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv&quot;
-)
 
 options(scipen = 999) 
 
@@ -441,16 +415,8 @@ plot(
                   #names of the levels of the order factor
   cex = 0.8       #Make the text a bit smaller
 )</code></pre>
-<div class="tutorial-exercise-support" data-label="prepare-mammals" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>##Here because data loaded in an exercise doesn&#39;t stay in the workspace
-
-mammal_longevity &lt;- 
-  read.csv(
-  &quot;https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv&quot;
-)</code></pre>
-</div>
-<div class="tutorial-exercise" data-label="scatterplot5" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-mammals","exercise.checker":"NULL"}</script>
+<div class="tutorial-exercise" data-label="scatterplot5" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="25">
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="scatterplot5-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code># You can use the same code we used for the previous 
@@ -509,6 +475,12 @@ legend(
 <script type="application/shiny-prerendered" data-context="server-start">
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 5)
+
+load("malawi_carbon.rda")
+load("quolls.rda")
+load("worldbank.rda")
+load("carnivores.rda")
+load("mammal_longevity.rda")
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
@@ -571,7 +543,7 @@ output$`tutorial-exercise-scatterplot5-output` <- renderUI({
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_checkbox", label = "quiz1-1", question = structure("Which of the following are true?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_e570d87",     option = "The artiodactyls and carnivora have relatively long lives for their body weights",     value = "The artiodactyls and carnivora have relatively long lives for their body weights",     label = structure("The artiodactyls and carnivora have relatively long lives for their body weights", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_ed5607f",     option = "Rodents live surprisingly long given that most of them are small",     value = "Rodents live surprisingly long given that most of them are small",     label = structure("Rodents live surprisingly long given that most of them are small", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_824dc4f",     option = "On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass",     value = "On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass",     label = structure("On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_cab1b43",     option = "From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown",     value = "From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown",     label = structure("From looking at the graph, it doesn&#39;t appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_47728d9",     option = "Some bats live for as long as other mammals that are 10000 times their mass",     value = "Some bats live for as long as other mammals that are 10000 times their mass",     label = structure("Some bats live for as long as other mammals that are 10000 times their mass", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_41cd3c5",     option = "The longest lived bat lives for longer than the longest lived rodent",     value = "The longest lived bat lives for longer than the longest lived rodent",     label = structure("The longest lived bat lives for longer than the longest lived rodent", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_18e5d3c",     option = "The heaviest bat weighs about 300g", value = "The heaviest bat weighs about 300g",     label = structure("The heaviest bat weighs about 300g", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_4d8ad23",     option = "The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls",     value = "The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls",     label = structure("The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_7af03f5",     option = "The longest lived species in this dataset is a primate",     value = "The longest lived species in this dataset is a primate",     label = structure("The longest lived species in this dataset is a primate", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz1-1-answer", question = "quiz1-1"), loading = structure("<strong>Loading:<\u002fstrong> \nWhich of the following are true?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 1662311055.22593, options = list()), class = c("learnr_checkbox", "tutorial_question")))
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_checkbox", label = "quiz1-1", question = structure("Which of the following are true?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_9556059",     option = "The artiodactyls and carnivora have relatively long lives for their body weights",     value = "The artiodactyls and carnivora have relatively long lives for their body weights",     label = structure("The artiodactyls and carnivora have relatively long lives for their body weights", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_6d65394",     option = "Rodents live surprisingly long given that most of them are small",     value = "Rodents live surprisingly long given that most of them are small",     label = structure("Rodents live surprisingly long given that most of them are small", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_2959c6f",     option = "On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass",     value = "On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass",     label = structure("On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_a37136d",     option = "From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown",     value = "From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown",     label = structure("From looking at the graph, it doesn&#39;t appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_b362fef",     option = "Some bats live for as long as other mammals that are 10000 times their mass",     value = "Some bats live for as long as other mammals that are 10000 times their mass",     label = structure("Some bats live for as long as other mammals that are 10000 times their mass", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_14ac6c1",     option = "The longest lived bat lives for longer than the longest lived rodent",     value = "The longest lived bat lives for longer than the longest lived rodent",     label = structure("The longest lived bat lives for longer than the longest lived rodent", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_45da13",     option = "The heaviest bat weighs about 300g", value = "The heaviest bat weighs about 300g",     label = structure("The heaviest bat weighs about 300g", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_8a04455",     option = "The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls",     value = "The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls",     label = structure("The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_2f9ae91",     option = "The longest lived species in this dataset is a primate",     value = "The longest lived species in this dataset is a primate",     label = structure("The longest lived species in this dataset is a primate", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz1-1-answer", question = "quiz1-1"), loading = structure("<strong>Loading:<\u002fstrong> \nWhich of the following are true?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 1708423758.70445, options = list()), class = c("learnr_checkbox", "tutorial_question")))
 </script>
  <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="dependencies">

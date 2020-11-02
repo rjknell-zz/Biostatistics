@@ -17,6 +17,12 @@ description: >
 ```{r setup, include=FALSE}
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 5)
+
+load("malawi_carbon.rda")
+load("quolls.rda")
+load("worldbank.rda")
+load("carnivores.rda")
+load("mammal_longevity.rda")
 ```
 
 ## Introduction
@@ -39,15 +45,8 @@ Here's a video which runs through the basics of what scatterplots are and what t
 # malawi_carbon <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/malawi_carbon.csv")
 ```
 
-Here's an example of a scatterplot, and the R code used to draw it. The `plot()` function in R will generate a scatterplot if you give it two numerical variables. You might notice the way that the two variables are entered as a *formula* so the y-axis variable comes first, followed by the x-axis one and they are separated by a tilde `~`. You can also specify `x=` and `y=` as separate arguments for a plot and you'll get the same result. The best thing to do is to pick one method and stick with it so there is no confusion. The data are from a study published by Charters *et al.* in 2018^1^ looking at physical performance in [Northern Quolls](https://en.wikipedia.org/wiki/Northern_quoll), a small marsupial predator found in Australia. Note that both grasping force and maximum oxygen uptake have been 'standardised' --- converted to variables with a mean of zero and a standard deviation of 1 --- this is for a multidimensional analysis that the authors did, but it doesn't really affect us here except that units don't really make much sense for these variables.
+Here's an example of a scatterplot, and the R code used to draw it. The `plot()` function in R will generate a scatterplot if you give it two numerical variables. You might notice the way that the two variables are entered as a *formula* so the y-axis variable comes first, followed by the x-axis one and they are separated by a tilde `~`. You can also specify `x=` and `y=` as separate arguments for a plot and you'll get the same result. The best thing to do is to pick one method and stick with it so there is no confusion. The data are from a study published by Charters *et al.* in 2018^1^ looking at physical performance in [Northern Quolls](https://en.wikipedia.org/wiki/Northern_quoll), a small marsupial predator found in Australia. Note that both grasping force and maximum oxygen uptake have been 'standardised' --- converted to variables with a mean of zero and a standard deviation of 1 --- this is for a multidimensional analysis that the authors did, but it doesn't really affect us here except that units don't really make much sense for these variables. The data are loaded as the `quolls` dataframe.
 
-We start out by loading the data which I have on a web server
-
-```{r}
-quolls <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/quolls.csv")
-```
-
-Now to draw the scatterplot
 
 ```{r}
 plot(quolls$grasp ~ quolls$Max_O2_consump, #Variables to be plotted
@@ -66,19 +65,11 @@ You can look at this scatterplot and you can see a pattern: the animals with hig
 
 ## Two simple scatterplots
 
-The data set malawi_carbon contains data on two lung immunity measures (oxidative burst activity and phagocytic activity) from people exposed to chronic carbon particulates in their homes in Malawi. These data were originally published by Rylance *et al.* (2015)^1^ as part of a study of how exposure to smoke from cooking fires affects lung function. Let's load the data and have a look at how these two variables relate to particulate exposure.
-
-```{r}
-malawi_carbon <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/malawi_carbon.csv")
-```
+The data set `malawi_carbon` contains data on two lung immunity measures (oxidative burst activity and phagocytic activity) from people exposed to chronic carbon particulates in their homes in Malawi. These data were originally published by Rylance *et al.* (2015)^1^ as part of a study of how exposure to smoke from cooking fires affects lung function. Let's have a look at how these two variables relate to particulate exposure.
 
 Start with the phagocytic activity data. Use the R code we used in the previous example as a guide. You'll need to use the `plot()` function and to specify the x- and y- variables by either putting in a formula of the form `y~x` or by specifying `x=` and `y=` arguments. The variables in question are called `log_carbon`, which should go on the x-axis, (the carbon data has been log transformed: more on this later) and the variable for the phagocytic activity is called `phagocytosis` and this should go on the y-axis. Both of them are in the `malawi_carbon` data frame so you need either to refer to them using the dataframe$variable syntax or just give the names of the variables but add a `data = malawi_carbon` argument to your function call. Finally, you'll need to put in some sensible x-axis and y-axis labels using `xlab = ""` and `ylab = ""`. I suggest "Log carbon score" for the x-axis and "Phagocytosis activity (%)" for the y-axis --- the phagocytosis score is actually a the percentage of macrophages which took up flourescent silica beads.
 
-```{r prepare-carbon}
-malawi_carbon <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/malawi_carbon.csv")
-```
-
-```{r scatterplot01, exercise = TRUE, exercise.lines = 8, exercise.setup = "prepare-carbon"}
+```{r scatterplot01, exercise = TRUE, exercise.lines = 8}
 
 ```
 
@@ -125,7 +116,7 @@ Have a look at the plot. Do you see any relationship between carbon exposure and
 
 Noew let's plot our other measure of lung immune function, oxidative burst activity, against carbon score. You can use the same code as before but you need to replace `phagocytosis` with `oxidative_burst` and you'll need a new y-axis label. I suggest "Oxidative burst index": it doesn't really have units.
 
-```{r scatterplot02, exercise = TRUE, exercise.lines = 8, exercise.setup = "prepare-carbon"}
+```{r scatterplot02, exercise = TRUE, exercise.lines = 8}
 
 ```
 
@@ -187,20 +178,13 @@ The p-value for the correlation is 0.034 which is indeed less than the cut-off f
 
 ## Increasing variance
 
-Now we'll use a dataframe loaded called `worldbank` which has data for 186 countries from 2014 as published by the World Bank. Let's load the data into R.
-
-```{r}
-
-worldbank <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/worldbank.csv")
-```
+Now we'll use a dataframe loaded called `worldbank` which has data for 186 countries from 2014 as published by the World Bank.
 
 One of the variables is called `Forest_area` and represents the percentage of the land surface for each nation which is forested. A second variable is called `Precipitation` and is the annual precipitation in mm. Try drawing a scatterplot of forest area, on the y-axis, versus precipitation on the x-axis. We'll make the plot look a bit nicer by using filled circles for our plot symbols, which we can do by using the argument `pch = 16`. We'll give them some colour as well: I suggest `aquamarine4` or `steelblue` which we can specify by using the `col = "colour name"` argument. Don't forget those quote marks.
 
-```{r prepare-worldbank}
-worldbank <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/worldbank.csv")
-```
 
-```{r scatterplot1, exercise = TRUE, exercise.lines = 8, exercise.setup = "prepare-worldbank"}
+
+```{r scatterplot1, exercise = TRUE, exercise.lines = 8}
 
 ```
 
@@ -243,18 +227,17 @@ The spread of data indicates a positive correlation: in general nations with low
 
 ## Skew data and log transformation
 
-The `carnivores` data frame contains brain mass and body mass data for 199 species of carnivorous mammals, originally published as part of a larger dataset by Burger *et al.* in 2019^1^. The variable for brain mass is called `Mean_brain_mass_g` and that for body mass is `Mean_body_mass_Kg`. Plot a scatterplot of brain mass against body mass and have a look at it. This plot is better with open symbols so use the default option: you can remove the `pch = 16` line. This time I'll let you load the data from https://github.com/rjknell/Biostatistics/raw/main/data/carnivores.csv
+The `carnivores` data frame contains brain mass and body mass data for 199 species of carnivorous mammals, originally published as part of a larger dataset by Burger *et al.* in 2019^1^. The variable for brain mass is called `Mean_brain_mass_g` and that for body mass is `Mean_body_mass_Kg`. Plot a scatterplot of brain mass against body mass and have a look at it. This plot is better with open symbols so use the default option: you can remove the `pch = 16` line. 
 
 ```{r scatterplot2, exercise.lines = 8, exercise = TRUE}
 
 ```
 
 ```{r scatterplot2-hint-1}
-#To load the data you need to use the "read.csv()" function. 
-#Allocate the output of that function to an object called carnivores.
-#
+
 # For the plot,you can use the same code we used for the previous 
 #example again.
+#
 # You just need to change the two variable names and the axis labels.
 ```
 
@@ -271,8 +254,6 @@ The `carnivores` data frame contains brain mass and body mass data for 199 speci
 ```{r scatterplot2-hint-3}
 #This is the solution
 
-carnivores <- read.csv("https://github.com/rjknell/Biostatistics/raw/main/data/carnivores.csv")
-
 plot(
   carnivores$Mean_brain_mass_g ~ carnivores$Mean_body_mass_Kg,
   col = "steelblue",
@@ -287,11 +268,6 @@ What do you see?
 <details><summary><b>Click here for explanation and more</b></summary>
 It looks as though there is a increasing, but curved, relationship between brain mass and body mass but the plot is very hard to interpret because almost all of the data are very close to the origin. This is because both brain mass and body mass are strongly positively skewed: here's a histogram of body mass to make the point.
 
-```{r echo = FALSE}
-## Here because data from an exercise doesn't stay in the workspace
-
-carnivores <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv")
-```
 
 ```{r fig.width = 4, fig.height = 5, fig.cap = "**Figure 3** Frequency histogram of body mass for 199 species of carnivore"}
 hist(carnivores$Mean_body_mass_Kg,
@@ -318,11 +294,8 @@ but we're going to plot the data on a log scale instead. This involves transform
 This sets a *global option* in R and stops it using scientific notation. 
 
 
-```{r prepare-carnivores}
-carnivores <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv")
-```
 
-```{r scatterplot3, exercise = TRUE, exercise.lines = 10, exercise.setup = "prepare-carnivores"}
+```{r scatterplot3, exercise = TRUE, exercise.lines = 10}
 
 ```
 
@@ -360,7 +333,7 @@ You can see that when these data are plotted on a log-log scale (notice how the 
 
 ## Data with structure
 
-The longevity dataset has data on maximum recorded lifespan, body mass and various ecological factors for 909 species of birds and mammals, from a publication by Healy *et al.* (2014)^1^.  We're going to look at the relationship between longevity and body mass for a subset of these data consisting of the data from the mammal orders with more than 30 species represented. This subset of data is in the `mammal_longevity` data frame which you can load from https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv
+The longevity dataset has data on maximum recorded lifespan, body mass and various ecological factors for 909 species of birds and mammals, from a publication by Healy *et al.* (2014)^1^.  We're going to look at the relationship between longevity and body mass for a subset of these data consisting of the data from the mammal orders with more than 30 species represented. This subset of data is in the `mammal_longevity` data frame.
 
 The variables you need to plot are `maximum_lifespan_yr` and `mass_g`. This time, since the name of the data frame is long and unwieldy, we'll just use the variable names in the `plot()` call and then add an argument `data = mammal_longevity` which will tell R where to look. These data need to be plotted in log space to be visualised as with the previous example, so you'll need to have the `log = "xy"` argument in there.
 
@@ -371,9 +344,6 @@ Don't forget to put some sensible axis names in using `xlab = ` and `ylab = `. I
 ```
 
 ```{r scatterplot4-hint-1}
-#To load the data frame, just use the same code
-#as before with the names changed
-
 # You can use the same code we used for the previous 
 # example again, just modified for the present plot.
 ```
@@ -386,11 +356,6 @@ Don't forget to put some sensible axis names in using `xlab = ` and `ylab = `. I
 
 ```{r scatterplot4-hint-3}
 #This is the solution
-
-mammal_longevity <- 
-  read.csv(
-  "https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv"
-)
 
 options(scipen = 999) 
 
@@ -430,16 +395,9 @@ legend(
 )
 ```
 
-```{r prepare-mammals}
-##Here because data loaded in an exercise doesn't stay in the workspace
 
-mammal_longevity <- 
-  read.csv(
-  "https://github.com/rjknell/Biostatistics/raw/main/data/mammal_longevity.csv"
-)
-```
 
-```{r scatterplot5, exercise.lines = 25, exercise = TRUE, exercise.setup = "prepare-mammals"}
+```{r scatterplot5, exercise.lines = 25, exercise = TRUE}
 
 ```
 

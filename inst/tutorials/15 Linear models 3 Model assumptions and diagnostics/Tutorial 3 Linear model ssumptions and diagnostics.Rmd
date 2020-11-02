@@ -14,13 +14,9 @@ description: >
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
 
-ragwort <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/Wang_et_al_plant_only.csv",
-    stringsAsFactors = TRUE
-  )
+load("ragwort.rda")
 
-gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv", stringsAsFactors = TRUE)
+load("gabon_diversity.rda")
 ```
 
 ## ANOVA and Regression diagnostics
@@ -67,16 +63,14 @@ print(anova(R1))
 
 To bring up the diagnostic plots for a linear model you can just use the `plot()` function with the model object as an argument, e.g. `plot(modelname)`. This will give four separate plots by default, but the first two of these are really the most important so we'll use the `which = ` argument to plot just these. Firstly the diagnostic plots for the root mass ANOVA model.
 
-```{r fig.cap = "Diagnostic plots for the root mass ANOVA", fig.width = 8}
-# Two plots side-by-side please
-par(mfrow = c(1,2))
+```{r fig.cap = "Diagnostic plots for the root mass ANOVA", fig.width = 4, fig.height = 4}
 
 plot(R1, which = 1:2)
 ```
 
-The left hand plot shows us the residuals versus the fitted values. This gives us lots of information about how good our model is at describing the patterns in the data and also lets us check for increases or decreases in variance with increases in the fitted values. Our plot has the residuals arranged in four groups. This is because there are only four fitted values, corresponding to the mean for each of the four factor levels. There are no obvious patterns in this plot that might cause concern. The degree of spread for each group is roughly the same, so the assumption of equal variances is probably OK, and there are no obvious extreme values and no indication of anything else amiss.
+The upper plot shows us the residuals versus the fitted values. This gives us lots of information about how good our model is at describing the patterns in the data and also lets us check for increases or decreases in variance with increases in the fitted values. Our plot has the residuals arranged in four groups. This is because there are only four fitted values, corresponding to the mean for each of the four factor levels. There are no obvious patterns in this plot that might cause concern. The degree of spread for each group is roughly the same, so the assumption of equal variances is probably OK, and there are no obvious extreme values and no indication of anything else amiss.
 
-The right hand plot gives us information about how closely the residuals conform to a normal distribution. If they were perfectly normal they would all lie on the dotted line, but in practice this never happens. Here most of our data points are on or very close to the line but the ones with the most negative residuals are somewhat above the line and the ones with the most positive residuals are somewhat below the line. This tells us that the distribution of residuals has "thin tails" (or to use the statistical jargon it is somewhat "paltykurtotic"). In other words, the most negative and the most positive values are closer to zero we would expect were they following a normal distribution.
+The lower plot gives us information about how closely the residuals conform to a normal distribution. If they were perfectly normal they would all lie on the dotted line, but in practice this never happens. Here most of our data points are on or very close to the line but the ones with the most negative residuals are somewhat above the line and the ones with the most positive residuals are somewhat below the line. This tells us that the distribution of residuals has "thin tails" (or to use the statistical jargon it is somewhat "paltykurtotic"). In other words, the most negative and the most positive values are closer to zero we would expect were they following a normal distribution.
 
 Is this a problem for our analysis? Not really. As we've discussed, linear models are robust to small violations of these assumptions, and this is only a small violation. The residuals are symmetrically distributed, with no skew, and they do at least roughly conform to a normal distribution, albeit one with somewhat skinny tails.
 
@@ -108,7 +102,7 @@ L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
 ```
 
 
-```{r diagnostics, exercise = TRUE, exercise.cap = "Diagnostics", exercise.lines = 5, exercise.setup = "root_anova_setup", fig.width = 8 }
+```{r diagnostics, exercise = TRUE, exercise.cap = "Diagnostics", exercise.lines = 5, exercise.setup = "root_anova_setup", fig.width = 4, fig.height = 4}
 
 
 ```
@@ -118,15 +112,10 @@ L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
 # the name of your ANOVA object
 ```
 
+
 ```{r diagnostics-hint-2}
-# Don't forget to set par(mfrow = c(1,2))
-# to get the two plots next to each other
-```
-
-```{r diagnostics-hint-3}
 # This is the solution
-par(mfrow = c(1,2))
-
+# 
 plot(L1, which = 1:2)
 ```
 
@@ -198,10 +187,10 @@ In general the new model is a somewhat better fit all round: the R-squared value
 
 ## Exercise 2: analysing ungulate abundance near villages in Gabon
 
-As a second exercise, we'll look at a second data set from the study of animal abundance and distance to villages in Gabon  that we previously met in the tutorial on linear regression (data from Koerner *et al.* 2017^1^). Here we'll look at how the relative abundance of ungulates changes with distance from the nearest village. The data are loaded and the data frame is called `gabon`. Running `str()` lets us check that everything has imported properly.
+As a second exercise, we'll look at a second data set from the study of animal abundance and distance to villages in Gabon  that we previously met in the tutorial on linear regression (data from Koerner *et al.* 2017^1^). Here we'll look at how the relative abundance of ungulates changes with distance from the nearest village. The data are loaded and the data frame is called `gabon_diversity`. Running `str()` lets us check that everything has imported properly.
 
 ```{r}
-str(gabon)
+str(gabon_diversity)
 ```
 
 
@@ -220,14 +209,14 @@ As always, the first thing to do is to look at a scatterplot. The variable name 
 # Specify appropriate x- and y-axis labels using
 # xlab =  and ylab =
 # 
-# You also need to include the data = gabon argument
+# You also need to include the data = gabon_diversity argument
 ```
 
 ```{r ungulates_scatterplot-hint-2}
 #Here's a code framework for you to adapt:
 
 plot(response ~ explanatory,
-     data = gabon,
+     data = gabon_diversity,
      xlab = "",
      ylab = "")
 ```
@@ -236,7 +225,7 @@ plot(response ~ explanatory,
 #Here's the solution:
 
 plot(RA_Ungulate ~ Distance,
-     data = gabon,
+     data = gabon_diversity,
      xlab = "Distance from nearest village (Km)",
      ylab = "Relative abundance of ungulates")
 ```
@@ -252,7 +241,7 @@ Looking at the plot, you can see that there seems to be something of a positive 
 ```{r ungulates_mod1-hint-1}
 #Here is a code framework to help you
 
-Name <- lm(response ~ explanatory, data = gabon)
+Name <- lm(response ~ explanatory, data = gabon_diversity)
 
 summary()
 ```
@@ -260,7 +249,7 @@ summary()
 ```{r ungulates_mod1-hint-2}
 # This is the solution
 
-U1 <- lm(RA_Ungulate ~ Distance, data = gabon)
+U1 <- lm(RA_Ungulate ~ Distance, data = gabon_diversity)
 
 summary(U1)
 ```
@@ -268,10 +257,10 @@ summary(U1)
 OK, that seems to have worked and the summary is telling us that we have a significant relationship between distance and ungulate relative abundance. Let's jump straight in and look at the diagnostics. Once again we just want the first two plots so specify `which = 1:2` as an argument to `plot()`.
 
 ```{r prepare-ungulates}
-U1 <- lm(RA_Ungulate ~ Distance, data = gabon)
+U1 <- lm(RA_Ungulate ~ Distance, data = gabon_diversity)
 ```
 
-```{r ungulate_diagnostics, exercise = TRUE, exercise.setup = "prepare-ungulates"}
+```{r ungulate_diagnostics, exercise = TRUE, exercise.setup = "prepare-ungulates", fig.height = 4, fig.width = 4}
 
 
 ```
@@ -326,7 +315,7 @@ This leaves us with option 3: transform our data and reanalyse. There are lots o
 
 An alternative to log-transformation is to use a square root transformation. This alters the distribution of the data somewhat less than a log transformation and also avoids the problem with the zero value in the dataset. Try refitting the model to the square root of relative abundance and check the diagnostic plots again. Remember that you can do the transformation within the formula in the `lm()` function call. Call your new model object [U2](https://en.wikipedia.org/wiki/Wikipedia:Lamest_edit_wars).
 
-```{r sqrt_lm, exercise = TRUE}
+```{r sqrt_lm, exercise = TRUE, fig.height = 4, fig.width = 4}
 
 
 ```
@@ -338,7 +327,7 @@ An alternative to log-transformation is to use a square root transformation. Thi
 ```{r sqrt_lm-hint-2}
 # The arguments you want in your lm() function call is
 
-sqrt(RA_Ungulate) ~ Distance, data = gabon
+sqrt(RA_Ungulate) ~ Distance, data = gabon_diversity
 ```
 
 ```{r sqrt_lm-hint-3}
@@ -350,7 +339,7 @@ plot(U2, which = 1:2)
 ```{r sqrt_lm-hint-4}
 # This is the solution
 
-U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon)
+U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon_diversity)
 
 plot(U2, which = 1:2)
 ```
@@ -358,7 +347,7 @@ plot(U2, which = 1:2)
 You can see that the residuals versus fitted values plot no longer has that wedge shape, and also that the qq plot looks rather better. Let's look at the summary output for our new model.
 
 ```{r prepare-ungulates2}
-U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon)
+U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon_diversity)
 ```
 
 
@@ -401,7 +390,7 @@ Finally, we need to visualise our data with the fitted model. We could plot the 
 
 # Plot the data
 plot(RA_Ungulate ~ Distance,
-     data = gabon,
+     data = gabon_diversity,
      xlab = "Distance from nearest village (Km)",
      ylab = "Relative abundance of ungulates")
 

@@ -120,14 +120,9 @@ $(document).ready(function () {
 
 <div id="section-what-is-the-purpose-of-descriptive-statistics" class="section level2">
 <h2>What is the purpose of descriptive statistics?</h2>
-<p>Figure 1 below is a frequency histogram showing measures of lysozyme activity for 194 men and women, from a study of the relationship between height and immunity in humans published in 2017<sup>1</sup>. Lysozyme is an enzyme that causes bacteria to lyse (hence the name) and its activity here was measured by incubating blood serum with a suspension of bacterial cells and comparing the optical absorption after 20 minutes with a control sample with no serum.</p>
-<pre class="r"><code># Load data
-height &lt;- read.csv(
-  &quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/body_height_immunity.csv&quot;
-  )
-
-# Draw the histogram
-hist(height$lysozyme,
+<p>Figure 1 below is a frequency histogram showing measures of lysozyme activity for 194 men and women, from a study of the relationship between height and immunity in humans published in 2017<sup>1</sup>. Lysozyme is an enzyme that causes bacteria to lyse (hence the name) and its activity here was measured by incubating blood serum with a suspension of bacterial cells and comparing the optical absorption after 20 minutes with a control sample with no serum. The data are loaded as a data frame called <code>height_immunity</code></p>
+<pre class="r"><code># Draw the histogram
+hist(height_immunity$lysozyme,
      col = &quot;aquamarine4&quot;,
      main = &quot;&quot;,
      xlab = &quot;Lysozyme activity&quot;
@@ -155,7 +150,7 @@ hist(height$lysozyme,
 <p>Here, <span class="math inline">\(\bar{x}\)</span> represents the sample mean, the <span class="math inline">\(\Sigma\)</span> in the equation is a capital sigma and is used to mean “the sum of”, <span class="math inline">\(x\)</span> refers to our data and <span class="math inline">\(n\)</span> is the sample size. So this is just saying “to get the mean, add all the data together and divide my the sample size” but in statisticalese. If we had only sampled lysozyme activity from 7 people then our data might look like this: <br> <span class="math display">\[0.37, 0.22, 0.50, 0.53, 0.38, 0.35, 0.23\]</span> <br> and we could calculate the mean of these data as follows:</p>
 <p><br></p>
 <p><span class="math display">\[ \bar{x} = \frac{0.37 + 0.22 + 0.50+ 0.53+ 0.38+ 0.35+ 0.23}{7} = \frac{2.58}{7} = 0.37 \]</span> <br> We end up with a value for <span class="math inline">\(\bar{x}\)</span> of just under 0.4, which concides nicely with the peak of the distribution. Since our <span class="math inline">\(n\)</span> is actually 194 it would be a little cumbersome to write out the calculation for the mean of all the data, but fortunately R has a built in function to calculate the mean called, surprisingly, <code>mean()</code>.</p>
-<pre class="r"><code>mean(height$lysozyme)</code></pre>
+<pre class="r"><code>mean(height_immunity$lysozyme)</code></pre>
 <pre><code>## [1] 0.3768497</code></pre>
 <p>Giving us a value for <span class="math inline">\(\bar{x}\)</span> which is surprisingly close to the one we got from just seven values. This is more by accident than design.</p>
 </div>
@@ -166,7 +161,7 @@ hist(height$lysozyme,
 <p><span class="math display">\[0.22, 0.23, 0.35, \underline{0.37}, 0.38, 0.50, 0.53.\]</span> The underlined value, 0.37, is the one in the middle and so is the median. This turns out to be exactly the same as the mean, and again this is more by accident than anything else. You can see that the median divides the data set into two equal halves, so half of the data have values greater than the median and half have values less than the median.</p>
 <p>If you have an even number of data, of course there isn’t a value in the middle when you rank your data. What you do in this case to calculate the median is to take the two numbers that are in the middle and calculate the mean of those two to get your median.</p>
 <p>For the median of our overall lysozyme variable, again R can very simply calculate this for you using the <code>median()</code> function.</p>
-<pre class="r"><code>median(height$lysozyme)</code></pre>
+<pre class="r"><code>median(height_immunity$lysozyme)</code></pre>
 <pre><code>## [1] 0.38</code></pre>
 <p>This returns 0.38 so fractionally higher than the 0.37 for the mean.</p>
 </div>
@@ -174,7 +169,7 @@ hist(height$lysozyme,
 <h3>Mode</h3>
 <p>The mode is the most common value in a dataset. It’s not used as much as the mean or the median, mainly because when you have continuous data which can take any value the mode doesn’t really have much meaning. Our lysozyme variable, for example, has 133 unique values out of 194 so asking which value is the most common isn’t really going to tell us a lot.</p>
 <p>Modes can be valuable when you’re looking at categorical data, where each value can only take one of a limited number of values such as juvenile/adult or green/blue/red/yellow or healthy/unwell/incapacitated/dead but in these cases you can usually just look at a frequency histogram. R doesn’t even have a function to calculate the mode… somewhat perversely it does have a function called <code>mode()</code> but that tells you what the “storage mode” of a variable is:</p>
-<pre class="r"><code>mode(height$lysozyme)</code></pre>
+<pre class="r"><code>mode(height_immunity$lysozyme)</code></pre>
 <pre><code>## [1] &quot;numeric&quot;</code></pre>
 <p>So now you know not to get confused there…</p>
 </div>
@@ -233,19 +228,14 @@ median(X2)</code></pre>
 </div>
 <div id="section-summarising-a-new-variable" class="section level4">
 <h4>Summarising a new variable</h4>
-<p>In the <code>height</code> data frame there is another variable called “phagocytic” which is a measure of the phagocytic response by the leucocytes for each person in the study. Calculate the mean and the median for this variable.</p>
+<p>In the <code>height_immunity</code> data frame there is another variable called “phagocytic” which is a measure of the phagocytic response by the leucocytes for each person in the study. Calculate the mean and the median for this variable.</p>
 <p><em>TIP</em> the <code>phagocytic</code> variable contains some missing data (<code>NA</code>). The default option for both the <code>mean()</code> and <code>median()</code> functions when presented with missing data is just to return <code>NA</code> and not calculate anything. If you want to get the mean or median calculated from the data that are present, you have to add this argument: <code>na.rm = TRUE</code> to your function call, so you’d have something like <code>median(my_variable_name, na.rm=TRUE)</code>.</p>
-<div class="tutorial-exercise-support" data-label="prepare-height" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code>height &lt;- read.csv(
-  &quot;http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/body_height_immunity.csv&quot;
-  )</code></pre>
-</div>
 <div class="tutorial-exercise" data-label="mean3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-height","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="mean3-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#As for the lysozyme data, we have to
-#tell R to look in the height data frame 
+#tell R to look in the height_immunity data frame 
 #for the lysozyme vector. You do this by
 #typing the name of the data frame, a dollar
 #symbol and then the name of the variable.</code></pre>
@@ -264,14 +254,14 @@ median(X2)</code></pre>
 <div class="tutorial-exercise-support" data-label="mean3-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution:
 
-mean(height$phagocytic, na.rm = TRUE)
-median(height$phagocytic, na.rm = TRUE)</code></pre>
+mean(height_immunity$phagocytic, na.rm = TRUE)
+median(height_immunity$phagocytic, na.rm = TRUE)</code></pre>
 </div>
 <p>Compare the values for the mean and the median. Are they roughly the same? If not what might this tell you about this variable?</p>
 <p>Let’s have a look at the shape of the <code>phagocytic</code> variable. Use the <code>hist()</code> function to plot a frequency histogram for this variable <code>phagocytic</code>. Let’s make it a nice plot so choose a suitable main title and set it using <code>main = "my_title"</code>, label the x axis “Phagocytic activity” using <code>xlab = ""</code> and use <code>col = ""</code> to set a colour for the bars. I’ll suggest “steelblue” or “sienna3” as giving nice results, or alternatively <a href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf">pick your own colour name from here</a>.</p>
 <p>Have a look at the histograms tutorial if you’re really stuck and can’t remember anything about how <code>hist()</code> works.</p>
 <div class="tutorial-exercise" data-label="mean4" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<script type="application/json" data-opts-chunk="1">{"fig.width":4,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":384,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-height","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":4,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":384,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="mean4-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#Don&#39;t forget to put a comma between the 
@@ -285,8 +275,8 @@ median(height$phagocytic, na.rm = TRUE)</code></pre>
 </div>
 <div class="tutorial-exercise-support" data-label="mean4-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#Remember that phagocytic is a variable in 
-#the height data frame, so you have to refer
-#to it as height$phagocytic
+#the height_immunity data frame, so you have to refer
+#to it as height_immunity$phagocytic
 #
 #The text for main = &quot;&quot;, xlab = &quot;&quot; and col = &quot;&quot;
 #must all have quote marks at the beginning and the end</code></pre>
@@ -294,7 +284,7 @@ median(height$phagocytic, na.rm = TRUE)</code></pre>
 <div class="tutorial-exercise-support" data-label="mean4-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution:
 
-hist(height$phagocytic,
+hist(height_immunity$phagocytic,
      main = &quot;Histogram of phagocytic activity&quot;,
      xlab = &quot;Phagocytic activity&quot;,
      col = &quot;sienna3&quot;
@@ -416,11 +406,11 @@ counts.ranked</code></pre>
 <h3>Measures of dispersion exercises</h3>
 <p>Let’s go back to our data on lysozyme activity. Use <code>var()</code> and <code>sd()</code> to calculate the variance and standard deviation of these data, and then use <code>IQR()</code> to calculate the interquartile range.</p>
 <div class="tutorial-exercise" data-label="spread1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="6">
-<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-height","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="spread1-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#Don&#39;t forget that lysozyme is a variable within
-#the height data frame, so you need to give the
+#the height_immunity data frame, so you need to give the
 #name of the data frame, then a $ symbol, then the
 #name of the variable.
 #
@@ -430,24 +420,24 @@ counts.ranked</code></pre>
 <div class="tutorial-exercise-support" data-label="spread1-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#For the variance you need this:
 
-var(height$lysozyme)
+var(height_immunity$lysozyme)
 
 #you chould be able to get the sd and IQR in a similar way</code></pre>
 </div>
 <div class="tutorial-exercise-support" data-label="spread1-hint-3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution:
 
-var(height$lysozyme)
-sd(height$lysozyme)
-IQR(height$lysozyme)</code></pre>
+var(height_immunity$lysozyme)
+sd(height_immunity$lysozyme)
+IQR(height_immunity$lysozyme)</code></pre>
 </div>
 <p>Now use <code>summary()</code> to tell you what the values are for the quartiles and the median for the lysozyme data.</p>
 <div class="tutorial-exercise" data-label="spread2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-height","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="spread2-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#Don&#39;t forget that lysozyme is a variable within
-#the height data frame, so you need to give the
+#the height_immunity data frame, so you need to give the
 #name of the data frame, then a $ symbol, then the
 #name of the variable.
 #
@@ -457,7 +447,7 @@ IQR(height$lysozyme)</code></pre>
 <div class="tutorial-exercise-support" data-label="spread2-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution:
 
-summary(height$lysozyme)</code></pre>
+summary(height_immunity$lysozyme)</code></pre>
 </div>
 <p>Using the numbers you’ve generated, try to answer these questions</p>
 <p><div class="panel-heading tutorial-quiz-title">Quiz</div><div class="panel panel-default">
@@ -477,11 +467,11 @@ summary(height$lysozyme)</code></pre>
 </div></p>
 <p>Now use <code>summary()</code> to find out the quartiles for the phagocytic activity variable.</p>
 <div class="tutorial-exercise" data-label="spread3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"prepare-height","exercise.checker":"NULL"}</script>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="spread3-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#Don&#39;t forget that phagocytic is a variable within
-#the height data frame, so you need to give the
+#the height_immunity data frame, so you need to give the
 #name of the data frame, then a $ symbol, then the
 #name of the variable.
 #
@@ -491,7 +481,7 @@ summary(height$lysozyme)</code></pre>
 <div class="tutorial-exercise-support" data-label="spread3-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>#This is the solution:
 
-summary(height$phagocytic)</code></pre>
+summary(height_immunity$phagocytic)</code></pre>
 </div>
 <p>Look at the values for the first quartile, the median and the third quartile and think about the difference between the first quartile and the median and the median and the third quartile. Now compare that to the same values for the lysozyme data. Do you notice a pattern? I’ve summarised them in this table just to make things easier.</p>
 <table>
@@ -533,6 +523,9 @@ summary(height$phagocytic)</code></pre>
 <script type="application/shiny-prerendered" data-context="server-start">
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE)
+
+load("height_immunity.rda")
+
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
@@ -588,11 +581,11 @@ output$`tutorial-exercise-spread2-output` <- renderUI({
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz-1", question = structure("Assuming our lysozyme data are normally distributed, roughly 2/3 of the data should lie between which pair of values?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_b7210d8",     option = "0.07 and 0.64", value = "0.07 and 0.64", label = structure("0.07 and 0.64", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_897d8fc",     option = "0.37 and 0.39", value = "0.37 and 0.39", label = structure("0.37 and 0.39", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_1bb6b73",     option = "0.22 and 0.54", value = "0.22 and 0.54", label = structure("0.22 and 0.54", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_a20b23a",     option = "0.34 and 0.43", value = "0.34 and 0.43", label = structure("0.34 and 0.43", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_4ca54f4",     option = "0.29 and 0.46", value = "0.29 and 0.46", label = structure("0.29 and 0.46", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz-1-answer", question = "quiz-1"), loading = structure("<strong>Loading:<\u002fstrong> \nAssuming our lysozyme data are normally distributed, roughly 2/3 of the data should lie between which pair of values?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 9927010.99537737, options = list()), class = c("learnr_radio", "tutorial_question")))
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz-1", question = structure("Assuming our lysozyme data are normally distributed, roughly 2/3 of the data should lie between which pair of values?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_1aba38f",     option = "0.07 and 0.64", value = "0.07 and 0.64", label = structure("0.07 and 0.64", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_e361bdb",     option = "0.37 and 0.39", value = "0.37 and 0.39", label = structure("0.37 and 0.39", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_e12797e",     option = "0.22 and 0.54", value = "0.22 and 0.54", label = structure("0.22 and 0.54", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_37a299b",     option = "0.34 and 0.43", value = "0.34 and 0.43", label = structure("0.34 and 0.43", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_64d5d82",     option = "0.29 and 0.46", value = "0.29 and 0.46", label = structure("0.29 and 0.46", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz-1-answer", question = "quiz-1"), loading = structure("<strong>Loading:<\u002fstrong> \nAssuming our lysozyme data are normally distributed, roughly 2/3 of the data should lie between which pair of values?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 520174907.257775, options = list()), class = c("learnr_radio", "tutorial_question")))
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz-2", question = structure("If you were to rank the lysozyme data and divide it into four equal parts, which numbers would give you the range for the top quarter of the data (i.e. the part with the largest values)?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_f9e53fb",     option = "0.38 and 0.43", value = "0.38 and 0.43", label = structure("0.38 and 0.43", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_44a332c",     option = "0.43 and 0.64", value = "0.43 and 0.64", label = structure("0.43 and 0.64", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_45b7e19",     option = "0.34 and 0.38", value = "0.34 and 0.38", label = structure("0.34 and 0.38", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_bb1c6f4",     option = "0.07 and 0.64", value = "0.07 and 0.64", label = structure("0.07 and 0.64", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_54ca610",     option = "0.38 and 0.64", value = "0.38 and 0.64", label = structure("0.38 and 0.64", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz-2-answer", question = "quiz-2"), loading = structure("<strong>Loading:<\u002fstrong> \nIf you were to rank the lysozyme data and divide it into four equal parts, which numbers would give you the range for the top quarter of the data (i.e. the part with the largest values)?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 1632962405.23959, options = list()), class = c("learnr_radio", "tutorial_question")))
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz-2", question = structure("If you were to rank the lysozyme data and divide it into four equal parts, which numbers would give you the range for the top quarter of the data (i.e. the part with the largest values)?", html = TRUE, class = c("html", "character")), answers = list(structure(list(id = "lnr_ans_d57457e",     option = "0.38 and 0.43", value = "0.38 and 0.43", label = structure("0.38 and 0.43", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_614dd63",     option = "0.43 and 0.64", value = "0.43 and 0.64", label = structure("0.43 and 0.64", html = TRUE, class = c("html",     "character")), correct = TRUE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_ceff868",     option = "0.34 and 0.38", value = "0.34 and 0.38", label = structure("0.34 and 0.38", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_b52f872",     option = "0.07 and 0.64", value = "0.07 and 0.64", label = structure("0.07 and 0.64", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer")), structure(list(id = "lnr_ans_b6ceda3",     option = "0.38 and 0.64", value = "0.38 and 0.64", label = structure("0.38 and 0.64", html = TRUE, class = c("html",     "character")), correct = FALSE, message = NULL), class = c("tutorial_question_answer", "tutorial_quiz_answer"))), button_labels = list(submit = structure("Submit Answer", html = TRUE, class = c("html", "character")), try_again = structure("Try Again", html = TRUE, class = c("html", "character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", "character")), try_again = structure("Incorrect", html = TRUE, class = c("html", "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", "character")), message = NULL, post_message = NULL), ids = list(    answer = "quiz-2-answer", question = "quiz-2"), loading = structure("<strong>Loading:<\u002fstrong> \nIf you were to rank the lysozyme data and divide it into four equal parts, which numbers would give you the range for the top quarter of the data (i.e. the part with the largest values)?\n<br/><br/><br/>", html = TRUE, class = c("html", "character")), random_answer_order = FALSE, allow_retry = FALSE,     seed = 4638717.99783993, options = list()), class = c("learnr_radio", "tutorial_question")))
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">

@@ -14,8 +14,8 @@ description: >
 library(learnr)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
 
-gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv", stringsAsFactors = TRUE)
-
+load("latitude_diversity.rda")
+load("gabon_diversity.rda")
 ```
 
 
@@ -29,16 +29,14 @@ We very often find ourselves with sets of *bivariate data*: two separate variabl
 
 ## Example: tree diversity and latitude
 
-Let's work though an example of a linear regression. The `Latitude_diversity` data set contains data on tree diversity from 24 forest plots in locations ranging from the tropics to northern Europe and the USA^1^. One of the measures we have for each plot is the Shannon diversity index, a measure of the overall diversity of trees present, and another is the latitude of the plot. Let's have a look at these data with a scatterplot. 
+Let's work though an example of a linear regression. The `latitude_diversity` data set contains data on tree diversity from 24 forest plots in locations ranging from the tropics to northern Europe and the USA^1^. One of the measures we have for each plot is the Shannon diversity index, a measure of the overall diversity of trees present, and another is the latitude of the plot. Let's have a look at these data with a scatterplot. 
 
 We'll use the absolute value of latitude because some values are negative if the plot is South of the Equator, but the pattern we're interested in is how diversity changes with distance from the equator.
 
 ```{r fig.cap = "**Figure 1** Shannon diversity for trees plotted against latitude for 24 forest plots"}
 
-diversity <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Latitude_diversity.csv")
-
 plot(Shannon_diversity ~ abs(Latitude),
-            data = diversity,
+            data = latitude_diversity,
             pch = 16,
             col = "aquamarine4",
             ylab = "Shannon diversity",
@@ -50,7 +48,8 @@ As you can see the Shannon diversity index decreases with increasing latitude, a
 If we want to find the line that best allows us to predict the Shannon diversity of a patch of forest from its latitude, we can fit a linear regression using the `lm()` (for linear model) function with a *formula* specifying exactly what we want the function to fit, much as we've seen for ANOVA and also for plotting data --- in fact the formula we'll use with `lm()` here is exactly the same as the one we used to generate the plot. We have the *response variable* (AKA the dependent variable), then a *tilde* (~), the symbol which means "as explained by" in an R formula, and then the *explanatory variable*, AKA the independent variable. If both are in the same data frame we can use the `data = ` argument to tell R where to look. To fit a linear model to these data, therefore, we can use this code:
 
 ```{r}
-L1 <- lm(Shannon_diversity ~ abs(Latitude), data = diversity)
+L1 <-
+  lm(Shannon_diversity ~ abs(Latitude), data = latitude_diversity)
 
 L1
 ```
@@ -63,7 +62,7 @@ and we can draw this onto our scatterplot using the `abline()` function.
 ```{r fig.cap = "**Figure 2** Shannon diversity for trees plotted against latitude for 24 forest plots with a line fitted from a linear regression"}
 
 plot(Shannon_diversity ~ abs(Latitude),
-            data = diversity,
+            data = latitude_diversity,
             pch = 16,
             col = "aquamarine4",
             ylab = "Shannon diversity",
@@ -98,11 +97,11 @@ print(anova(L1))
 This is calculated in the same way as the ANOVA table for a single factor ANOVA, except that instead of calculating the SS error (or the Residual Sum of Squares as R calls it) by subtracting a group mean from each data point we subtract the predicted value of the fitted line: so if we have a data point which has a latitude of 9.15 and a Shannon diversity of 4.0 (This is Barro Colorado Island, Panama in our data) the predicted value is $4.82 - 0.0741 \times 9.15 = 4.142$. $(x - \bar{x})^2$ is therefore $\left( 4.0 - 4.142 \right)^2 = 0.020$ for this particular data point. Just to make the point we can calculate our sums of squares separately.
 
 ```{r}
-SSTotal <- sum((diversity$Shannon_diversity - 
-                  mean(diversity$Shannon_diversity))^2)
+SSTotal <- sum((latitude_diversity$Shannon_diversity - 
+                  mean(latitude_diversity$Shannon_diversity))^2)
 
-SSError <- sum((diversity$Shannon_diversity - 
-                  (4.82 - 0.0741 * abs(diversity$Latitude)))^2)
+SSError <- sum((latitude_diversity$Shannon_diversity - 
+                  (4.82 - 0.0741 * abs(latitude_diversity$Latitude)))^2)
                
 SSTreatment <- SSTotal - SSError
 
@@ -168,7 +167,7 @@ This plot shows us the *residuals* plotted against the *fitted values*: so for e
 Looking at the plot, there's no obvious pattern in terms of changing variances or curves that might indicate non-linearity. There are some points with rather large negative residuals and these reflect the couple of data points with lower diversity for their latitude that you can see on the scatterplot we drew earlier. Should we be concerned about this? Maybe, maybe not. R has kindly given us their row numbers (10 and 11) and if we look at where these two points are from
 
 ```{r}
-diversity$Country[10:11]
+latitude_diversity$Country[10:11]
 ```
 
 we find that both are from Hawaii. Let's just visualise them on the scatterplot with a fitted line which we drew before.
@@ -176,13 +175,13 @@ we find that both are from Hawaii. Let's just visualise them on the scatterplot 
 ```{r fig.cap = "**Figure 4** Shannon diversity for trees plotted against latitude for 24 forest plots with a line fitted from a linear regression, with data from Hawaii indicated by a black circle"}
 
 plot(Shannon_diversity ~ abs(Latitude),
-            data = diversity,
+            data = latitude_diversity,
             pch = 16,
             col = "aquamarine4",
             ylab = "Shannon diversity",
             xlab = "Absolute latitude")
 
-points(diversity$Shannon_diversity[diversity$Country == "Hawaii USA"] ~ abs(diversity$Latitude[diversity$Country == "Hawaii USA"]),
+points(latitude_diversity$Shannon_diversity[latitude_diversity$Country == "Hawaii USA"] ~ abs(latitude_diversity$Latitude[latitude_diversity$Country == "Hawaii USA"]),
             cex = 2)
 
 abline(
@@ -218,13 +217,9 @@ Some non-independence between data can actually be controlled for statistically,
 
 In 2017, Sally Koerner and co-authors^1^ published a study of how animal abundance changes with distance from villages in Gabon. This involved establishing 24 2.5km transects at varying distances from the nearest village, monitoring them monthly and recording all of the mammals and birds encountered. We'll look at a small subset of their data, focussing on how the relative abundance of ungulates and rodents changed with the distance from the nearest village. Relative abundance was calculated for each group of animals as the percentage of all encounters on that transect which were with that particular group.
 
-We can load these data from Github:
 
-```{r eval = FALSE}
-gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv", stringsAsFactors = TRUE)
-```
 
-Whenever we load some data it's a good idea to look at the structure of the freshly imported data frame with the `str` function.
+The data are loaded as the dataframe `gabon_diversity`. Whenever we start working with some data it's a good idea to look at the structure of the dataframe with the `str` function.
 
 ```{r structure, exercise=TRUE}
 
@@ -239,7 +234,7 @@ Whenever we load some data it's a good idea to look at the structure of the fres
 ```{r structure-hint-2}
 # This is the solution:
 
-str(gabon)
+str(gabon_diversity)
 ```
 
 You should see that we have quite a few variables in this data frame of varying types, so `TransectID` and `NumHouseholds` are integers, there are quite a few numeric variables including some describing the environment around the transect, such as Veg_canopy which is a measure of how closed the canopy is in the area, and also our measures of the relative abundance of the different groups of animals (`RA_Apes`, `RA_Birds` etc) are also numeric vectors. Finally we have two factors, `LandUse` and `HuntCat` which have imported as factors becuase we set `stringsAsFactors = TRUE` in our `read.csv()` function call. We're not going to look at these further in this exercise but whenever you import a factor it's a good idea to check that the number of levels is correct because if there is any problem with the data it can often show up here. In this case we know that there should be three levels of each so that's OK.
@@ -288,7 +283,7 @@ ylab = "Relative abundance of birds"
 # This is the solution
 
 plot(RA_Birds ~ Distance,
-     data = gabon,
+     data = gabon_diversity,
      xlab = "Distance from nearest village (Km)",
      ylab = "Relative abundance of birds")
 ```
@@ -299,7 +294,7 @@ There aren't any obviously problematic data points, so none with values that are
 
 ```{r bird_regression, exercise = TRUE}
 
-B1 <- lm(response ~ explanatory, data = gabon)
+B1 <- lm(response ~ explanatory, data = gabon_diversity)
 
 ```
 
@@ -316,7 +311,7 @@ B1 <- lm(response ~ explanatory, data = gabon)
 ```{r bird_regression-hint-3}
 #This is the solution
 
-B1 <- lm(RA_Birds ~ Distance, data = gabon)
+B1 <- lm(RA_Birds ~ Distance, data = gabon_diversity)
 
 summary(B1)
 ```
@@ -324,7 +319,7 @@ summary(B1)
 You can see that we have a highly significant negative relationship between distance and the relative abundance of birds. Before we go any further we should check our diagnostics: use the `plot()` function to generate the residuals versus fitted values plot and the qq plot of the residuals. Remember that we can choose the first two diagnostic plots by using the `which = 1:2` argument.
 
 ```{r prepare-birds}
-B1 <- lm(RA_Birds ~ Distance, data = gabon)
+B1 <- lm(RA_Birds ~ Distance, data = gabon_diversity)
 ```
 
 ```{r bird_diagnostics, exercise = TRUE, exercise.setup = "prepare-birds"}
@@ -350,7 +345,7 @@ These diagnostic plots are pretty good. There's no suggestion of any problems in
 Now that we're happy with our diagnostics we can think about what our regression is telling us. Here's the summary output again.
 
 ```{r echo = FALSE}
-B1 <- lm(RA_Birds ~ Distance, data = gabon)
+B1 <- lm(RA_Birds ~ Distance, data = gabon_diversity)
 ```
 
 ```{r}
@@ -398,7 +393,7 @@ Finally, let's visualise our fitted regression by replotting our scatterplot and
 # This is the solution
 
 plot(RA_Birds ~ Distance,
-     data = gabon,
+     data = gabon_diversity,
      xlab = "Distance from nearest village (Km)",
      ylab = "Relative abundance of birds")
 

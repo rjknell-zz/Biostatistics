@@ -19,13 +19,11 @@ library(RColorBrewer)
 
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
 
-pinniped <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv")
+load("pinniped.rda")
 
-pinniped$Mate_type <- as.factor(pinniped$Mate_type)
+# pinniped$Mate_type <- as.factor(pinniped$Mate_type)
 
-beetle <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv")
-
-beetle$treatment <- as.factor(beetle$treatment)
+load("gnatocerus.rda")
 
 palette1 <- brewer.pal(n = 6, name = 'Dark2')
 ```
@@ -36,35 +34,28 @@ You should now be starting to feel familiar with fitting linear models with mult
 
 ## Exercise 1: pinniped brains and mating systems
 
-Let's start with an fairly straightforward example. This comes from a study of brain size and mating type in pinnipeds (seals, sealions and walruses) published in 2012 by John Fitzpatrick and coauthors^1^. As part of a study of how mating system might impact on the evolution of brain and body size, Fitzpatrick *et al.* collected data on brain and body size and mating system for males and females from 33 species of pinniped. The data are available on github as a .csv file at <https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv>. Start by importing the data and saving it as an object called `pinnipeds`, and then checking the import with the `str()` function.
+Let's start with an fairly straightforward example. This comes from a study of brain size and mating type in pinnipeds (seals, sealions and walruses) published in 2012 by John Fitzpatrick and coauthors^1^. As part of a study of how mating system might impact on the evolution of brain and body size, Fitzpatrick *et al.* collected data on brain and body size and mating system for males and females from 33 species of pinniped. The data are loaded as a dataframe called `pinniped`, and you should start by checking it with the `str()` function.
 
 ```{r pinniped_import, exercise = TRUE}
 
 ```
 
 
+
+
+
 ```{r pinniped_import-hint-1}
-# You need to use the read.csv() function
-# to import the data.
-```
-
-
-```{r pinniped_import-hint-2}
-# Don't forget to put the file path (in this
-# case the URL) in quote marks
-```
-
-
-```{r pinniped_import-hint-3}
 # This is the solution
-pinniped <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv")
 
 str(pinniped)
 ```
 
 We're interested here in the relationship between body mass and brain mass for males, and how it relates to the intensity of sexual selection each species experiences. The latter is indicated here by a variable called `Mate_type` which has two values. `mono` indicates species where the males are *monogynous*, pairing with a single female at a time, whereas `poly` indicates species with *polygynous* males which defend groups of females against rival males during the breeding season. Polygynous males are expected to experience stronger sexual selection during the breeding season.
 
-<br> ![](https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%206%20Factors%20and%20continuous%20variables/Cape_fur_seals.jpg){width="500"}
+<br> 
+![](images/Cape_fur_seals.jpg){width="500"}
+
+
 
 Two male pinnipeds (Cape Fur Seals *Arctocephalus pusillus*, actually a species of sealion) competing for territory in which to defend a group of females. Photo copyright Rob Knell 2019.
 
@@ -72,7 +63,7 @@ Two male pinnipeds (Cape Fur Seals *Arctocephalus pusillus*, actually a species 
 
 Before going any further we should do some exploratory analysis. In this case a scatterplot of `Male_brain_g` versus `Male_mass_Kg` would be appropriate, and you can colour-code it for `Mate_type` by firstly declaring `Mate_type` to be a factor and then specifying `col = Mate_type` as an argument in your `plot()` function call. Since we're just doing some exploratory analysis we won't worry about a legend --- because `poly` comes after `mono` in the alphabet the `poly` data will be coded red and the `mono` data black. Don't forget to label the axes appropriately.
 
-```{r pinniped_scatterplot1, exercise = TRUE}
+```{r pinniped_scatterplot1, exercise = TRUE, exercise.lines = 10}
 
 
 ```
@@ -115,7 +106,11 @@ question("Based on the scatterplot above, which of the following do you think ar
 
 <summary>**Click here for more on the exploratory analysis**</summary> <br> Both variables are strongly positively skewed and it's going to be necessary to correct this with a transformation before proceeding further. Given the nature of the data and the strong positive skew a log transformation would be appropriate: try to generate a new plot like the previous one but with both variables logged. NB neither variable has any zeros so no need to add a constant.
 
-```{r pinniped_scatterplot2, exercise = TRUE}
+```{r pinniped_setup, echo = FALSE}
+pinniped$Mate_type <- as.factor(pinniped$Mate_type)
+```
+
+```{r pinniped_scatterplot2, exercise = TRUE, exercise.setup = "pinniped_setup", exercise.lines = 8}
 plot(Male_brain_g ~ Male_mass_Kg, 
      col = Mate_type, 
      data = pinniped)
@@ -139,9 +134,9 @@ plot(log(Male_brain_g) ~ log(Male_mass_Kg),
 
 The log transformation seems to have sorted out the problems associated with the very skewed data. Now to fit a model. We'd like the main effects of both `Male_mass_Kg` and `Mate_type`, plus their interaction. Don't forget to log both of the variables that require transformation, and call your fitted model object `P1`.
 
-Once the model is fitted, check the significance of the interaction term using `drop1()`.
+Once the model is fitted, check the significance of the interaction term using `drop1()`. Note that to get the equivalent output to normal you'll need to use `print(drop1(... )) because otherwise the formatting applied in the tutorial will alter it.
 
-```{r pinniped_model1, exercise = TRUE}
+```{r pinniped_model1, exercise = TRUE, exercise.setup = "pinniped_setup"}
 
 
 ```
@@ -168,7 +163,7 @@ Once the model is fitted, check the significance of the interaction term using `
 P1 <- lm(log(Male_brain_g) ~ log(Male_mass_Kg) * Mate_type,
          data = pinniped)
 
-drop1(P1, test = "F")
+print(drop1(P1, test = "F"))
 ```
 
 A model with the interaction present has higher explanatory power than one with just the main effects so we'll keep the present model.
@@ -478,42 +473,41 @@ Six of these are from the genus *Phoca*, and all of these have monogynous males.
 
 In many species of animal one sex (usually the male, but not always) carries weapons such as horns, enlarged mandibles or similar which are used in contests with other animals from the same species. These weapons are often extremely variable in size between individuals, and an interesting question is why this should be and how the growth of these weapons is regulated. In 2019 a team of scientists based in Japan and the USA^2^ published the results of an in-depth study on the regulation of weapon size in a beetle called the broad-horned flour beetle, *Gnatocerus cornutus*. Males of this species have enlarged mandibles which they use in fights with other males to gain access to females. There is considerable variation in the length of these mandibles, much of which is known to be associated with the diet of the males during development.
 
-<br> ![](https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%206%20Factors%20and%20continuous%20variables/G_cornutus.jpg){width="500"}
+<br> 
+
+![](images/G_cornutus.jpg){width="500"}
+
 
 Male *Gnatocerus cornutus* showing enlarged mandibles. Photo by Udo Schmidt, released under a [Creative Commons Attribution-ShareAlike license](https://creativecommons.org/licenses/by-sa/2.0/).
 
 Insulin-like peptides (ILPs) have been suggested to be important in the regulation of weaponry in insects, and Okada and co-workers identified five ILP genes in the *G. cornutus* genome. To test whether they were involved in weapon growth, they silenced these genes using RNA interference (RNAi) in final instar larvae, and then measured the mandible size and also a number of other measures of size in the adult males. RNAi coding for green flourescent protein (GFP) was used as a control.
 
-Here, we're going to model the relationship between RNAi treatment and mandible length. Because mandible length increases with body size, we'll also include elytron width in our model as a measure of body size. The data set is on github at <https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv>: read this into R as an object called `beetle` and check the import using `str()`.
+Here, we're going to model the relationship between RNAi treatment and mandible length. Because mandible length increases with body size, we'll also include elytron width in our model as a measure of body size. The dataframe is loaded as `gnatocerus`. Let's start by checking its structure.
 
-```{r beetle_import, exercise = TRUE}
-```
-
-```{r beetle_import-solution}
-beetle <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv")
-
-str(beetle)
+```{r}
+str(gnatocerus)
 ```
 
 There are three variables: `treatment` which is the RNAi treatment the beetle received, `EW` which is Elytra Width in µm and `ML` which is Mandible Length, also in µm. `ML` is our response variable and `EW` is a continuous explanatory variable. `treatment` has discrete values and we will be wanting to use this as a factor in our model. Before we do anything else, then, we need to ask R to make it into a factor using the `as.factor()` function. Check the conversion has gone correctly with the `summary()` function.
 
 ```{r treatment_factor, exercise = TRUE}
+
 ```
 
 ```{r treatment_factor-hint-1}
 # Remember that you have to make treatment
 # into a factor and then allocate it to the
-# correct variable in the beetle data frame.
+# correct variable in the gnatocerus data frame.
 # 
-# Then run summary() on beetle$treatment
-# 
+# Then run summary() on gnatocerus$treatment
+
 ```
 
 ```{r treatment_factor-hint-2}
 # This is the solution
-beetle$treatment <- as.factor(beetle$treatment)
+gnatocerus$treatment <- as.factor(gnatocerus$treatment)
 
-summary(beetle$treatment)
+summary(gnatocerus$treatment)
 ```
 
 `GFP` refers to the beetles given RNAi for Green Flourescent Protein (a jellyfish protein) as a control, and `1ILP` to `5ILP` are the five insulin-like protein genes which were suppressed using RNAi in the final instar larvae. Let's draw a scatterplot of `ML` against `EW`, colour coded by the levels of `treatment` to get an idea of what our data look like.
@@ -528,7 +522,12 @@ palette1 <- brewer.pal(n = 6, name = 'Dark2')
 
 Now to draw our scatterplot. See if you can fill in the XXXXX parts.
 
-```{r beetle_scatterplot1, exercise = TRUE, exercise.lines = 15}
+```{r beetle_setup, echo = FALSE}
+gnatocerus$treatment <- as.factor(gnatocerus$treatment)
+```
+
+
+```{r beetle_scatterplot1, exercise = TRUE, exercise.setup = "beetle_setup", exercise.lines = 15}
 
 plot(XXXXX ~ XXXXX,
      data = XXXXX,
@@ -548,7 +547,7 @@ legend("topleft",
 ```{r beetle_scatterplot1-hint-1}
 # The plot should be relatively easy: 
 # we want ML plotted against EW with the
-# dataframe as beetle. For the axis labels
+# dataframe as gnatocerus. For the axis labels
 # don't forget the units are µm 
 # 
 # For the legend col and pch should
@@ -563,7 +562,7 @@ legend("topleft",
 ```{r beetle_scatterplot1-hint-2}
 # This is the solution
 plot(ML ~ EW,
-     data = beetle,
+     data = gnatocerus,
      col = palette1[treatment],
      pch = 16,
      xlab = "Elytron width (µm)",
@@ -573,7 +572,7 @@ plot(ML ~ EW,
 legend("topleft", 
        col = palette1,
        pch  =16,
-       legend = levels(beetle$treatment)
+       legend = levels(gnatocerus$treatment)
 )
 ```
 
@@ -612,10 +611,10 @@ Overall then, we're probably justified in thinking there's something fishy about
 To find out which row of the data frame corresponds to this data point we can use `which()`.
 
 ```{r}
-which(beetle$ML >900)
+which(gnatocerus$ML >900)
 ```
 
-See if you can remove the outlier from these data, and allocate the edited data frame to a new object called `beetle2`. Check it's worked by calling `summary` on the new `ML` variable in `beetle2` --- the new maximum value should be more sensible.
+See if you can remove the outlier from these data, and allocate the edited data frame to a new object called `gnatocerus2`. Check it's worked by calling `summary` on the new `ML` variable in `gnatocerus2` --- the new maximum value should be more sensible.
 
 ```{r outlier_removal, exercise = TRUE}
 
@@ -635,9 +634,9 @@ See if you can remove the outlier from these data, and allocate the edited data 
 ```{r outlier_removal-hint-2}
 # This is the solution
 
-beetle2 <- beetle[-24, ]
+gnatocerus2 <- gnatocerus[-24, ]
 
-summary(beetle2$ML)
+summary(gnatocerus2$ML)
 ```
 
 OK. Now we can get on with the analysis. Just to make it clear, this anomalous data point was not in the data set made public by Okada *et al.* --- it was added to give an example of what an outlying data point lookes like.
@@ -651,11 +650,15 @@ OK. Now we can get on with the analysis. Just to make it clear, this anomalous d
 ## Fitting the model
 
 ```{r beetle_setup1, echo = FALSE}
-beetle2 <- beetle[-24, ]
+gnatocerus2 <- gnatocerus[-24, ]
+
+gnatocerus2$treatment <- as.factor(gnatocerus2$treatment)
 ```
 
 ```{r echo = FALSE}
-beetle2 <- beetle[-24, ]
+gnatocerus2 <- gnatocerus[-24, ]
+
+gnatocerus2$treatment <- as.factor(gnatocerus2$treatment)
 ```
 
 The model we will fit will have two explanatory variables, `EW`, elytron width, included as a measure of overall beetle size, and `treatment` which tells us the experimental treatment the beetles received. It's necessary to include a measure of body size because mandible length, our response variable, increases with body size, and because the experimental treatment we are using might well change the relationship between these two variables. Rather than just asking "does mandible length change with treatment?", therefore, we really need to ask "does the relationship between mandible length and body size change with treatment?".
@@ -663,14 +666,15 @@ The model we will fit will have two explanatory variables, `EW`, elytron width, 
 Before we fit our model, however, we should think a little about how we can best ask the questions that we're really interested in. As we discussed way back in the first tutorial on single factor ANOVA, what the coefficients table you get in R gives us is a set of *treatment contrasts* which allow us to make certain comparisons directly without using things like post-hoc tests. As you've hopefully gathered by now, the default for these contrasts is to make the first factor level in alphabetical order into the *reference level* which is used for the intercept and which the other levels are compared with. In the case of `treatment` the reference level is the first one listed by `levels()`.
 
 ```{r}
-levels(beetle2$treatment)
+levels(gnatocerus2$treatment)
 ```
 
-`1ILP` is first because numbers come before letters in alphabetical order, so `1ILP` is the reference level. We don't want to see contrasts between the `1ILP` factor level and the others, however. The animals given the GFP RNAi treatment are the controls, and the question we're interested in is whether treatment with our candidate insulin-like peptides changes the mandible length - elytron width relationship is relative to the `GFP` treatment. To see the contrasts with `GFP` we can use the `relevel()` function to change the reference level. `relevel()` takes two arguments, the name of the factor and then `ref =` followed by the name of the new reference level, typically in quote marks. Don't forget to allocate the new factor returned by `relevel()` to the `beetle2$treatment` variable.
+`1ILP` is first because numbers come before letters in alphabetical order, so `1ILP` is the reference level. We don't want to see contrasts between the `1ILP` factor level and the others, however. The animals given the GFP RNAi treatment are the controls, and the question we're interested in is whether treatment with our candidate insulin-like peptides changes the mandible length - elytron width relationship is relative to the `GFP` treatment. To see the contrasts with `GFP` we can use the `relevel()` function to change the reference level. `relevel()` takes two arguments, the name of the factor and then `ref =` followed by the name of the new reference level, typically in quote marks. Don't forget to allocate the new factor returned by `relevel()` to the `gnatocerus2$treatment` variable.
 
 Once it's done you can check the reference level by using `levels()` again.
 
 ```{r relevel, exercise = TRUE, exercise.setup = "beetle_setup1"}
+
 ```
 
 ```{r relevel-hint-1}
@@ -684,16 +688,19 @@ Once it's done you can check the reference level by using `levels()` again.
 ```{r relevel-hint-2}
 # Here's the solution
 
-beetle2$treatment <- relevel(beetle2$treatment, ref = "GFP")
+gnatocerus2$treatment <- relevel(gnatocerus2$treatment, ref = "GFP")
 
-levels(beetle2$treatment)
+levels(gnatocerus2$treatment)
 ```
 
 Now that we've done something that 95% of biology academics don't do before jumping straight into the stats, namely thinking about the reason why we're doing the analysis and what the questions we're trying to answer are, we can go ahead and fit our model. Main effects plus interaction please, and call the model `B1`. Check for significance using `drop1()`. To get the standard R formatted output please enclose your `drop1()`function call in `print()`.
 
 ```{r beetle_setup2}
-beetle2 <- beetle[-24, ]
-beetle2$treatment <- relevel(beetle2$treatment, ref = "GFP")
+gnatocerus2 <- gnatocerus[-24, ]
+
+gnatocerus2$treatment <- as.factor(gnatocerus2$treatment)
+
+gnatocerus2$treatment <- relevel(gnatocerus2$treatment, ref = "GFP")
 
 ```
 
@@ -721,7 +728,7 @@ print(drop1(Model, test = "F"))
 # Here's the solution
 
 B1 <- lm(ML ~ EW * treatment,
-         data = beetle2)
+         data = gnatocerus2)
 
 print(drop1(B1, test = "F"))
 ```
@@ -748,7 +755,7 @@ As usual we'll just look at the first two diagnostic plots.
 
 ```{r beetle_setup3}
 B1 <- lm(ML ~ EW * treatment,
-         data = beetle2)
+         data = gnatocerus2)
 ```
 
 ```{r beetle_model_diagnostics, exercise = TRUE, exercise.setup = "beetle_setup3"}
@@ -791,8 +798,14 @@ Overall the diagnostic plots are remarkably well behaved and don't show anything
 Let's check the output from running `summary()` on our model.
 
 ```{r beetle_setup4}
+gnatocerus2 <- gnatocerus[-24, ]
+
+gnatocerus2$treatment <- as.factor(gnatocerus2$treatment)
+
+gnatocerus2$treatment <- relevel(gnatocerus2$treatment, ref = "GFP")
+
 B1 <- lm(ML ~ EW * treatment,
-         data = beetle2)
+         data = gnatocerus2)
 ```
 
 ```{r beetle_summary, exercise = TRUE, exercise.setup = "beetle_setup4"}
@@ -839,7 +852,7 @@ To visualise our data with lines fitted for each level of treatment using ggplot
 ```{r}
 library(ggplot2)
 
-p1 <- ggplot(data = beetle2) +  # tell iw which dtaa frame to use
+p1 <- ggplot(data = gnatocerus2) +  # tell iw which dtaa frame to use
   aes(x = EW, y = ML, colour = treatment) + # specify the 'aesthetics'
   geom_point() + # add layer with points plotted
   geom_smooth(method= "lm", se = FALSE) + # add lines

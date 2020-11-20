@@ -17,12 +17,9 @@ library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
 
 
-finch <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/Hill_et_al_finch_coloration_trimmed.csv"
-  )
+load("finch_colours.rda")
 
-cricket <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/houslay_data.csv")
+load("cricket_song.rda")
 ```
 
 ## Multiple continuous explanatory variables.
@@ -35,19 +32,16 @@ Note that some of the material here is a bit advanced and it's assumed that you'
 
 The data we will analyse here come from a study published in 2019 by Geoffrey Hill of Auburn University and co-workers^1^. This research was based on the observation that many animals use visual signals with carotenoids as the pigment in question, and it's now well known that in many cases the redder the visual signal the better the signaller performs in terms of acquiring mates or competing for resources. The mechanism linking red carotenoid signalling to individual quality is not known, however, but Hill *et. al.* followed previous work which had found that many bird species ingest yellow carotenoids but then oxidise these to red pigments, probably in the mitochondria. One part of Hill *et al.*'s investigation into this involved measuring the hue of the red feathers and a series of measures of mitochondrial function in 36 male house finches *Haemorhous  mexicanus* at a time when they were moulting and therefore actively producing red carotenoids.
 
-<img src = "https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%205%20Multiple%20regression/house_finches.jpg" width = "500">
+![](images/house_finches.jpg){width="400"}
+
 
 **Figure 1** Male and female house finches showing the sexually dimorphic red colouration of the male. Photo by Donald Willin, released under a [creative commons attribution 2.0 licence](https://creativecommons.org/licenses/by/2.0/).
 
-The dataset which we'll analyse is a subset of a larger dataset which was analysed by Hill *et al.*. Let's load it into R and check its structure.
+The dataset which we'll analyse is a subset of a larger dataset which was analysed by Hill *et al.*. The dataframe is loaded and called `finch_colours`. We'll start by checking its structure.
 
 ```{r}
-finch <-
-  read.csv(
-    "https://github.com/rjknell/Linear_models/raw/master/data/Hill_et_al_finch_coloration_trimmed.csv"
-  )
 
-str(finch)
+str(finch_colours)
 ```
 
 We have `Hue` as a response variable. Higher values of `Hue` indicate yellower plumage and lower values redder for a particular bird. There are then three measures of mitochondrial function: firstly, `C1RCR` which refers to the "Respiratory Control Ratio", calculated by dividing the maximum respiration rate by the basal rate. Secondly we have `C1MMP` which refers to the Mitochondrial Membrane Potential, and finally there is `PGC_1a`, a measure of the levels of a protein which is activates transcription in mitochondrial biogenesis, so a measure of the rate at which mitochondria are replaced.
@@ -59,7 +53,7 @@ As always we'll start with some exploratory graphs. In this case we'll draw scat
 par(mfrow = c(3,1))
 
 plot(Hue ~ C1RCR,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "aquamarine4",
      ylab = "Hue",
@@ -95,21 +89,21 @@ par(mfrow = c(1,1))
 par(mfrow = c(3,1))
 
 plot(Hue ~ C1RCR,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "aquamarine4",
      ylab = "Hue",
      xlab = "Respiratory control ratio")
 
 plot(Hue ~ C1MMP,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "aquamarine4",
      ylab = "Hue",
      xlab = "Mitochondrial membrane potential")
 
 plot(Hue ~ PGC_1a,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "aquamarine4",
      ylab = "Hue",
@@ -123,12 +117,12 @@ Looking at these plots we can see that there might be relationships between some
 Fill in the formula in the `lm()` function call. We want to explain the patterns in `Hue` and we'll fit just the main effects of `C1RCR`, `C1MMP` and `PGC_1a`: we won't test for interaction terms here.
 
 
-We'll use `drop1()` to check on the significance of each explanatory variable.
+We'll use `drop1()` to check on the significance of each explanatory variable. Note that we're using `print()` to get the same output that you'd get from R in the console --- if you were doing this analysis outside a tutorial like this it would not be necessary.
 
 ```{r model_1, exercise = TRUE}
-M1 <- lm(, data = finch)
+M1 <- lm(, data = finch_colours)
 
-drop1(M1, test = "F")
+print(drop1(M1, test = "F"))
 ```
 ```{r model_1-hint-1}
 # Hue is the response variable so that goes on the left of
@@ -138,9 +132,9 @@ drop1(M1, test = "F")
 
 ```{r model_1-hint-2}
 # This is the solution:
-M1 <- lm(Hue ~ C1RCR + C1MMP + PGC_1a, data = finch)
+M1 <- lm(Hue ~ C1RCR + C1MMP + PGC_1a, data = finch_colours)
 
-drop1(M1, test = "F")
+print(drop1(M1, test = "F"))
 ```
 
 According to our deletion test two of our three explanatory variables have statistically significant effects on the redness of the finch's feathers. The third, mitochondrial membrane potential, does not. Depending on our opinion of the various arguments surrounding different model selection techniques, we could potentially choose to remove this non-significant term from our model to give us a *minimal adequate model* to describe the patterns in these data (see the tutorial on model selection for more on this). Since `C1MMP` is not a variable which we have introduced into the model to allow us to control for an effect, and it is not a variable that is in the model because it represents some important element of experimental design (e.g. if the design were a blocked one we should include `block` as a factor) we can argue that removing it is justified. 
@@ -161,15 +155,15 @@ Fit a second model called `M2` and assess the significance of the explanatory va
 ```{r model_2-hint-2}
 # This is the solution
 
-M2 <- lm(Hue ~ C1RCR + PGC_1a, data = finch)
+M2 <- lm(Hue ~ C1RCR + PGC_1a, data = finch_colours)
 
-drop1(M2, test = "F")
+print(drop1(M2, test = "F"))
 ```
 
 This leaves us with a model with two significant explanatory variables. We should check our diagnostic plots now.
 
 ```{r echo = FALSE}
-M2 <- lm(Hue ~ C1RCR + PGC_1a, data = finch)
+M2 <- lm(Hue ~ C1RCR + PGC_1a, data = finch_colours)
 ```
 
 ```{r}
@@ -204,9 +198,9 @@ hist(M2$residuals, breaks = 10)
 These are clearly somewhat positively skewed. Overall the amount of skew in the residuals is not especially severe, but we should probably try to do something about it. We could try a square root transformation of these data but, to cut a long story short, a square root transformation doesn't really rectify the problem so a log transformation is necessary. See if you can change this code to log transform the response variable so we can see what this does to the model with all three explanatory variables. There are no zeros in the `Hue` variable so there's no need to add a constant.
 
 ```{r log_model1, exercise = TRUE}
-L1 <- lm(Hue ~ C1RCR + C1MMP + PGC_1a, data = finch)
+L1 <- lm(Hue ~ C1RCR + C1MMP + PGC_1a, data = finch_colours)
 
-drop1(L1, test = "F")
+print(drop1(L1, test = "F"))
 ```
 ```{r log_model1-hint-1}
 # Just use the log() function on the Hue variable
@@ -214,7 +208,7 @@ drop1(L1, test = "F")
 
 ```{r log_model1-hint-2}
 # This is the solution
-L1 <- lm(log(Hue) ~ C1RCR + C1MMP + PGC_1a, data = finch)
+L1 <- lm(log(Hue) ~ C1RCR + C1MMP + PGC_1a, data = finch_colours)
 
 print(drop1(L1, test = "F"))
 ```
@@ -222,9 +216,9 @@ print(drop1(L1, test = "F"))
 `C1MMP` remains non-significant but `PGC_1a` is now slightly the wrong side of 0.05. Let's simplify the model by removing the variable with the least support,`C1MMP`, and see what that looks like.
 
 ```{r}
-L2 <- lm(log(Hue) ~ C1RCR  + PGC_1a, data = finch)
+L2 <- lm(log(Hue) ~ C1RCR  + PGC_1a, data = finch_colours)
 
-drop1(L2, test = "F")
+print(drop1(L2, test = "F"))
 ```
 OK, since we removed the less well supported term from the model `PGC_1a` is statistically significant in this model, although not especially so. Let's re-check the diagnostics to see if the log transformation has sorted out the error distribution.
 
@@ -244,7 +238,7 @@ Things are better. The residuals versus fitted values plot no longer has any ind
 Take a look at the `summary()` output for the L2 model.
 
 ```{r prepare-L2}
-L2 <- lm(log(Hue) ~ C1RCR  + PGC_1a, data = finch)
+L2 <- lm(log(Hue) ~ C1RCR  + PGC_1a, data = finch_colours)
 ```
 
 ```{r summary_log_model2, exercise = TRUE, exercise.setup = "prepare-L2"}
@@ -279,7 +273,7 @@ par(mfrow = c(1,2))
 
 # plot log hue against C1RCR
 plot(log(Hue) ~ C1RCR,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "steelblue",
      ylab = "Log of Hue",
@@ -287,7 +281,7 @@ plot(log(Hue) ~ C1RCR,
 
 # use abline() to draw the line from a
 # simple linear regression
-abline(lm(log(Hue) ~ C1RCR, data = finch),
+abline(lm(log(Hue) ~ C1RCR, data = finch_colours),
        col = "blue",
        lwd = 2)
 
@@ -330,7 +324,7 @@ par(mfrow = c(1,2))
 
 # plot log hue against C1RCR
 plot(log(Hue) ~ C1RCR,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "steelblue",
      ylab = "Log of Hue",
@@ -338,14 +332,14 @@ plot(log(Hue) ~ C1RCR,
 
 # use abline() to draw the line from a
 # simple linear regression
-abline(lm(log(Hue) ~ C1RCR, data = finch),
+abline(lm(log(Hue) ~ C1RCR, data = finch_colours),
        col = "blue",
        lwd = 2)
 
 # plot log hue against PGC_1a
 
 plot(log(Hue) ~ PGC_1a,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "steelblue",
      ylab = "Log of Hue",
@@ -354,7 +348,7 @@ plot(log(Hue) ~ PGC_1a,
 # use abline() to draw the line from a
 # simple linear regression
 
-abline(lm(log(Hue) ~ PGC_1a, data = finch),
+abline(lm(log(Hue) ~ PGC_1a, data = finch_colours),
        col = "blue",
        lwd = 2)
 
@@ -386,7 +380,7 @@ newvar <- XXXXX
 # plot the new variable against PGC 1a
 
 plot(XXXX ~ XXXX,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "steelblue",
      ylab = "Log of Hue minus the effect of C1RCR",
@@ -402,14 +396,14 @@ abline(a = X, b = X,
 ```{r plot_variables2-hint-1}
 # To generate newvar:
 
-newvar <- log(finch$Hue) - (3.03 - 0.262 * finch$C1RCR)
+newvar <- log(finch_colours$Hue) - (3.03 - 0.262 * finch_colours$C1RCR)
 ```
 
 ```{r plot_variables2-hint-2}
 # For the plot
 
 plot(newvar ~ PGC_1a,
-     data = finch,
+     data = finch_colours,
      pch = 16,
      col = "steelblue",
      ylab = "Log of Hue minus the effect of C1RCR",
@@ -424,6 +418,23 @@ abline(a = 0, b = 7.1,
        lwd = 2)
 ```
 
+```{r plot_variables2-hint-4}
+# This is the solution
+
+newvar <- log(finch_colours$Hue) - (3.03 - 0.262 * finch_colours$C1RCR)
+
+plot(newvar ~ PGC_1a,
+     data = finch_colours,
+     pch = 16,
+     col = "steelblue",
+     ylab = "Log of Hue minus the effect of C1RCR",
+     xlab = "PGC 1a")
+
+abline(a = 0, b = 7.1,
+       col = "blue",
+       lwd = 2)
+```
+
 Finally, we need to interpret these results in terms of the biology of the system. Bearing in mind that low scores of Hue indicate male birds with redder plumage, and redness seems to be acting as an indicator of 'condition' in these males, what do these results tell us? For the full story you're best off reading the paper, but briefly:
 
 * Overall there does seem to be a link between mitochondrial functioning and feather colour. The data we have here are correlational, of course, so we have to be cautious in our interpretation because we don't know much about causality.
@@ -432,14 +443,14 @@ Finally, we need to interpret these results in terms of the biology of the syste
 
 ## Exercise 2: interactions and curves
 
+**Warning** This example gets quite complex and technical. 
+
 In 2017 Tom Houslay and co-workers^1^ published a study of the relationship between, among other things, condition, resource availability (food quality) and sexual signalling (calling song) in the decorated cricket, *Gryllodes sigillatus*. Male crickets "sing" to attract females by rubbing specialised areas of their wings together, an activity which is energetically costly. As part of their study, Houslay *et al.* fed freshly eclosed^2^ adult male crickets on synthetic food with a 1:8 protein to carbohydrate ratio but which caried in total nutritional content from 12% to 84%, with the amount of nutritional content increasing in 12% increments between these limits. The crickets were weighed at the start of the experiment and again after a week, and the amount of time they spent singing during the week was recorded.
 
-The data can be loaded from github:
+The dataframe is loaded as `cricket_song`. We'll begin by checking its structure.
 
 ```{r}
-cricket <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/houslay_data.csv")
-
-str(cricket)
+str(cricket_song)
 ```
 
 The important variables from our point of view are `Delta_smi` which is the change in weight over the first week, `Diet` which gives the percentage nutritional content of the food the animal was fed and `Song_week1` which is the total amount of time the cricket spent singing in the first week of the experiment. We're interested in how the change in weight of these animals relates to their investment in signalling and to their diet. As always, we'll start by looking at some plots of our data. We'd like a scatterplot of `Delta_smi` against `Diet`, and a second one of `Delta_smi` against `Song_week1`.
@@ -492,7 +503,7 @@ plot(Y-VARIABLE ~ X-VARIABLE,
 # Here is the code for the first plot
 
 plot(Delta_smi ~ Diet,
-     data = cricket,
+     data = cricket_song,
      xlab = "Diet nutritional content (%)",
      ylab = "Week1 Change in weight (g)")
 ```
@@ -507,14 +518,14 @@ par(mfrow = c(1,2))
 # Plot of Delta_smi versus diet
 
 plot(Delta_smi ~ Diet,
-     data = cricket,
+     data = cricket_song,
      xlab = "Diet nutritional content (%)",
      ylab = "Week1 Change in weight (g)")
 
 # Plot of Delta_smi versus Song_week1 
 
 plot(Delta_smi ~ Song_week1,
-     data = cricket,
+     data = cricket_song,
      xlab = "Time spent singing (s)",
      ylab = "Week1 Change in weight (g)")
 
@@ -552,14 +563,14 @@ Looking at these scatterplots we've seen two issues that might concern us. First
 Secondly, one of our explanatory variables, `Song_week1`, is strongly positively skewed. We can confirm this by plotting a histogram:
 
 ```{r}
-hist(cricket$Song_week1, 
+hist(cricket_song$Song_week1, 
      breaks = 10)
 ```
 
 Is this a problem? It's important to understand that there's no requirement for explanatory variables to follow, for example, a normal distribution: this only applies to the residuals of the response variable once an appropriate model has been fitted. Strong skew like this, however, tends to obscure any relationship between the response and the epxlanatory variable, and those few data points with very large values are likely to have a disproportionate effect n the overall model fit. It's best in this case to transform these data to reduce the skew, and with this degree of skew then a log-transformation is approriate. There are some zeros in the data so we will add a constant, in this case 1, to our variable before transforming it. Let's see what this does:
 
 ```{r}
-hist(log(cricket$Song_week1+1), 
+hist(log(cricket_song$Song_week1+1), 
      breaks = 10)
 ```
 
@@ -618,9 +629,9 @@ Don't forget you need to add 1 to the Song_week1 variable and log transform it.
 # Here is the solution
 
 C1 <- lm(Delta_smi ~ Diet * log(Song_week1 +1),
-         data = cricket)
+         data = cricket_song)
 
-drop1(C1, test = "F")
+print(drop1(C1, test = "F"))
 ```
 
 Hopefully you've got a highly significant interaction term. If you haven't then check whether you log transformed the `Song_week1` variable. Recall that `drop1()` only carries out a test on the model variables where it makes sense to do so, and since both our variables are included in the interaction term it is not meaningful to do a statistical test on the main effects.
@@ -629,7 +640,7 @@ The next thing we need to do is to check the diagnostic plots. As usual we're re
 
 ```{r echo = FALSE, prepare-model1}
 C1 <- lm(Delta_smi ~ Diet * log(Song_week1 +1),
-         data = cricket)
+         data = cricket_song)
 ```
 
 ```{r cricket_diagnostics1, exercise = TRUE, exercise.setup = "prepare_model1"}
@@ -686,9 +697,9 @@ Here's the model with the quadratic term added.
 
 ```{r}
 C2 <- lm(Delta_smi ~ Diet + I(Diet^2) + log(Song_week1 +1) + Diet:log(Song_week1 +1),
-         data = cricket)
+         data = cricket_song)
 
-drop1(C2, test = "F")
+print(drop1(C2, test = "F"))
 ```
 
 You can see that the quadratic term is highly significant on the deletion test, indicating that a model without it has significantly less explanatory power. Has this fixed the curvature in the diagnostic plot?
@@ -738,14 +749,14 @@ To better understand the interaction term, it's worth knowing that for an intera
 
 ```{r echo = FALSE}
 C2 <- lm(Delta_smi ~ Diet + I(Diet^2) + log(Song_week1 +1) + Diet:log(Song_week1 +1),
-         data = cricket)
+         data = cricket_song)
 ```
 
 ```{r}
 
 # Generate new variables
-diet_squared <- cricket$Diet^2
-int <- cricket$Diet * log(cricket$Song_week1 + 1)
+diet_squared <- cricket_song$Diet^2
+int <- cricket_song$Diet * log(cricket_song$Song_week1 + 1)
 
 # Generate coefficients for the model with new variables
 coefs1 <-
@@ -754,7 +765,7 @@ coefs1 <-
       diet_squared + 
       log(Song_week1 + 1) + 
       int,
-    data = cricket
+    data = cricket_song
   ))
 
 # Generate coefficients for model C2
@@ -814,21 +825,21 @@ library(ggplot2)
 
 # Remove the effects of diet
 resids <-
-  cricket$Delta_smi - (
+  cricket_song$Delta_smi - (
     -0.01524 + 
-      0.0007974 * cricket$Diet - 
-      0.000006789 * (cricket$Diet ^ 2) + 
-      0.0000495 * log(cricket$Song_week1 + 1)
+      0.0007974 * cricket_song$Diet - 
+      0.000006789 * (cricket_song$Diet ^ 2) + 
+      0.0000495 * log(cricket_song$Song_week1 + 1)
   )
 
 # Plot the graph
-p2 <- ggplot(data = data.frame(cricket, resids),
+p2 <- ggplot(data = data.frame(cricket_song, resids),
       aes(x = log(Song_week1 +1), y = resids)) +
       geom_point(pch = 1, colour = "steelblue") + 
       theme_bw() +
       labs(x = "Log singing effort",
            y = "Residual change in weight (g)") +
-      facet_wrap(facets = as.factor(cricket$Diet), 
+      facet_wrap(facets = as.factor(cricket_song$Diet), 
                  nrow = 2) +
       geom_abline(aes(intercept = 0, slope = -0.0007879 + Diet * 0.0000495))
 
@@ -858,17 +869,17 @@ $$Delta\_smi = -0.01524 + (0.0007947 + 0.000095) \times Diet - 0.00000679 \times
 ```{r}
 
 # Generate dummy variable to divide song effort into quartiles
-song_quartiles <- character(length = dim(cricket)[1])
+song_quartiles <- character(length = dim(cricket_song)[1])
 
-song_quartiles[which(log(cricket$Song_week1 +1) <= 4.307)] <- "1st quartile"
-song_quartiles[which(log(cricket$Song_week1 +1) > 4.307 & log(cricket$Song_week1 +1) <= 6.957)] <- "2nd quartile"
-song_quartiles[which(log(cricket$Song_week1 +1) > 6.957 & log(cricket$Song_week1 +1) <= 8.61)] <- "3rd quartile"
-song_quartiles[which(log(cricket$Song_week1 +1) > 8.61)] <- "4th quartile"
+song_quartiles[which(log(cricket_song$Song_week1 +1) <= 4.307)] <- "1st quartile"
+song_quartiles[which(log(cricket_song$Song_week1 +1) > 4.307 & log(cricket_song$Song_week1 +1) <= 6.957)] <- "2nd quartile"
+song_quartiles[which(log(cricket_song$Song_week1 +1) > 6.957 & log(cricket_song$Song_week1 +1) <= 8.61)] <- "3rd quartile"
+song_quartiles[which(log(cricket_song$Song_week1 +1) > 8.61)] <- "4th quartile"
 
 song_quartiles <- as.factor(song_quartiles)
 
 # Midpoint values for each quartile
-midpoints <- numeric(length = dim(cricket)[1])
+midpoints <- numeric(length = dim(cricket_song)[1])
 
 midpoints[which(song_quartiles == "1st quartile")] <- 4.307/2
 midpoints[which(song_quartiles == "2nd quartile")] <- 4.307 + (6.957 - 4.307)/2
@@ -876,19 +887,19 @@ midpoints[which(song_quartiles == "3rd quartile")] <- 6.957 + (8.61 - 6.957)/2
 midpoints[which(song_quartiles == "4th quartile")] <- 8.61 + (11.351 - 8.61)/2
 
 # Generate predicted values
-predicted <- (0.0007974 + 0.0000495 * midpoints) * cricket$Diet - 0.000006789 * cricket$Diet^2
+predicted <- (0.0007974 + 0.0000495 * midpoints) * cricket_song$Diet - 0.000006789 * cricket_song$Diet^2
 
 
 # Remove the effects of song effort
 resids <-
-  cricket$Delta_smi - (
+  cricket_song$Delta_smi - (
     -0.01524 - 
-      0.0007879 * log(cricket$Song_week1 + 1) +
-      0.0000495 * cricket$Diet
+      0.0007879 * log(cricket_song$Song_week1 + 1) +
+      0.0000495 * cricket_song$Diet
   )
 
 # PLot the graph
-p2 <- ggplot(data = data.frame(cricket, song_quartiles, predicted, resids),
+p2 <- ggplot(data = data.frame(cricket_song, song_quartiles, predicted, resids),
              aes(x = Diet, y = resids)) +
           geom_point(pch = 1, colour = "steelblue") +
           geom_line(aes(x = Diet, y = predicted)) +

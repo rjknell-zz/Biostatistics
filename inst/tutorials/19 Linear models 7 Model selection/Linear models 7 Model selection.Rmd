@@ -19,9 +19,9 @@ options(scipen = 5)
 
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
 
-gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv")
+load("gabon_diversity.rda")
 
-gabon2 <- gabon[ ,c(2,4,5,6,7,10)]
+gabon2 <- gabon_diversity[ ,c(2,4,5,6,7,10)]
 ```
 
 ## Principles of Model Selection
@@ -34,15 +34,7 @@ The question of which model to select when we have a variety of potentially impo
 
 For this exercise we'll be using the dataset which we previously used in the linear regression tutorial. Briefly, these are data published by Koerner *et al.* (2017)^1^ which are summaries of a series of repeated animal surveys on transects at varying distances from villages in Gabon. For each animal group Koerner *et al.* calculated the "relative abundance": the percentage of all encounters on that transect which were with that particular group. We will use the relative abundance of birds as our response variable.
 
-Koerner *et al.* collected data on a number of other aspects of each transect, so in addition to the distance from the nearest village we have the size of the nearest village (number of households), the type of land use (Park, Logging or Neither) the vegetation species richness measured as the number of tree species present in a series of plots along the transect, and the canopy cover as the percentage of the sky blocked by canpoy in each plot. Number of lianas, hunting intensity and land use were also recorded but we won't include these measures in our analysis for simplicity.
-
-We can load these data from Github, and use subscripts to remove some unnecessary variables from the data frame. 
-
-```{r eval = FALSE}
-gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv")
-
-gabon2 <- gabon[ ,c(2,4,5,6,7,10)]
-```
+Koerner *et al.* collected data on a number of other aspects of each transect, so in addition to the distance from the nearest village we have the size of the nearest village (number of households), the type of land use (Park, Logging or Neither) the vegetation species richness measured as the number of tree species present in a series of plots along the transect, and the canopy cover as the percentage of the sky blocked by canpoy in each plot. Number of lianas, hunting intensity and land use were also recorded but we won't include these measures in our analysis for simplicity. The data are loaded as `gabon2`, which is a version of the `gabon_diversity` dataset we used before with some variables removed for simplicity.
 
 Check the gabon2 dataset using `str()`
 
@@ -61,11 +53,14 @@ Assuming the import is OK we will need to make LandUse into a factor using the `
 
 ```
 
+
 ```{r gabon2-solution}
 gabon2$LandUse <- as.factor(gabon2$LandUse)
 ```
 
-```{r gabon-setup, echo = FALSE}
+
+```{r gabon_setup, echo = FALSE}
+
 gabon2$LandUse <- as.factor(gabon2$LandUse)
 
 model1 <- lm(RA_Birds ~ Distance + LandUse + NumHouseholds + Veg_Rich + Veg_Canopy, data = gabon2)
@@ -75,9 +70,10 @@ model2 <- update(model1,~.-LandUse)
 model3 <- update(model2,~.-Veg_Canopy)
 ```
 
+
 Check the conversion to a factor went well using `str()` again.
 
-```{r gabon3, exercise = TRUE, exercise.setup = "gabon-setup"}
+```{r gabon3, exercise = TRUE, exercise.setup = "gabon_setup"}
 
 ```
 
@@ -86,6 +82,18 @@ str(gabon2)
 ```
 
 Now we should do some exploratory analysis. Rather than going thorugh a full version of this, for the sake of brevity we'll just use a quick method of visualising a complex dataset. This involves using the `pairs()` function on a data frame, which will plot a matrix with a small scatterplot for each pairwise comparision of variables. 
+
+```{r echo = FALSE}
+
+gabon2$LandUse <- as.factor(gabon2$LandUse)
+
+model1 <- lm(RA_Birds ~ Distance + LandUse + NumHouseholds + Veg_Rich + Veg_Canopy, data = gabon2)
+
+model2 <- update(model1,~.-LandUse)
+
+model3 <- update(model2,~.-Veg_Canopy)
+```
+
 
 ```{r fig.width = 7, fig.height = 7}
 pairs(gabon2)

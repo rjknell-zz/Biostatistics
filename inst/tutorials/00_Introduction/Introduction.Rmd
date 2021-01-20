@@ -31,7 +31,7 @@ These tutorials were written by Rob Knell, School of Biological and Chemical Sci
 
 ## License
 
-This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license
+This content is licensed under a [GPL-3](https://www.gnu.org/licenses/gpl-3.0.en.html) license
 
 ## Interactive coding exercises
 

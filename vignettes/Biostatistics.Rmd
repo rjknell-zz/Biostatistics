@@ -24,9 +24,9 @@ library(Biostatistics)
 
 This package consists of a series of learnr tutorials for use in teaching statistics to biologists. They were written for use in undergraduate and postgraduate teaching in the UK but they could also be used for individual, self-directed learning. The subjects covered range from basic data visualistion and description through to reasonably advanced linear modelling. There are obviously many subjects which are not currently covered such as generalised linear models, mixed effects models and multivariate statistics and it is hoped that these will be incorporated in the future.
 
-There is a strong emphasis throughout the tutorial on analysing real data sets. This is much better for learning statistics than using synthetic example data because with real data comes all of the issues and uncertainty associated with real science. The data used here have mostly been made publicly available by the authors of papers published in the biological literature, mostly via the [https://datadryad.org/stash](Dryad data repository), and I would like to thank all of them for this.
+There is a strong emphasis throughout the tutorial on analysing real data sets. This is much better for learning statistics than using synthetic example data because with real data comes all of the issues and uncertainty associated with real science. The data used here have mostly been made publicly available by the authors of papers published in the biological literature, mostly via the [Dryad data repository](https://datadryad.org/stash), and I would like to thank all of them for this.
 
-The tutorials are written for the [https://rstudio.github.io/learnr/](learnr) package which uses an [https://rmarkdown.rstudio.com/](rmarkdown) framework to render tutorials into [https://shiny.rstudio.com/](shiny) webapps. The rmarkdown files for all of the tutorials are available on the [https://github.com/rjknell](author's github page).
+The tutorials are written for the [learnr](https://rstudio.github.io/learnr/) package which uses an [rmarkdown](https://rmarkdown.rstudio.com/) framework to render tutorials into [shiny](https://shiny.rstudio.com/) webapps. The rmarkdown files for all of the tutorials are available on the [author's github page](https://github.com/rjknell).
 
 ## Running tutorials
 

@@ -1,10 +1,10 @@
 Package: Biostatistics
 Type: Package
-Title: LearnR Biostatistics Tutorials
+Title: Statistics Tutorials for Biologists
 Version: 1.0.0
 Author: Rob Knell
 Maintainer: Rob Knell <r.knell@qmul.ac.uk>
-Description: LearnR tutorials for biostatistics. 
+Description: Tutorials for statistics, aimed at biological scientists. 
     Subjects range from basic descriptive statistics 
     through to complex linear modelling. The tutorials
     include text, videos, interactive coding exercises

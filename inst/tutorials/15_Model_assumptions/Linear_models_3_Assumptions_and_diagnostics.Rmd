@@ -1,0 +1,412 @@
+---
+title: "Linear models 3: Assumptions and Diagnostics"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Linear models make certain assumptions about the data being analysed. Here we introduce these assumptions and then look at how to use diagnostic plots to check how well our data correspond to them..
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
+
+load("ragwort.rda")
+
+load("gabon_diversity.rda")
+```
+
+## ANOVA and Regression diagnostics
+
+Not all data are suitable for analysis with linear models. The way the analysis is calculated is based on a number of assumptions about the distribution of the data and if these are not met then the conclusions from the analysis can be incorrect. This video introduces the important concepts about linear model assumptions and describes how to test these using the *diagnostic plots* that R can produce for you if you've fitted a linear model to your data. It's a bit long (sorry) so feel free to pause it and make a cup of tea as many times as you like.
+
+![](https://youtu.be/zDD0RoZhMZ4)
+
+
+## Diagnostics for the root mass ANOVA from tutorial 1
+
+To recap, the important assumptions about the data for linear model are:
+
+1. Data points are *independent* --- in other words, each data point is a separate measure of the effect in question. This is arguably the most important assumption of all, but it is not something that can be checked after analysis. Rather, we should be making sure that our data are independent by careful study design.
+
+1. The *errors are normal* --- here, *error* refers to the remaining variance in the data that we cannot explain, so in this case the distribution of the data points around the estimated means should be normal, or at least approximately so. NB you might have read or been told that the important assumption is that the data overall follow a normal distribution. This is not true and in fact the response variable can have any distribution so long as the *errors* are normal. 
+
+1. The *variance is equal between groups* --- for the present analyses the groups are the different treatment groups, and for our ANOVA to be reliable the variance of each group should be approximately the same.
+
+1. *Linearity* --- this means that when we have a continuous explanatory variable, we assume that the relationship between the explanatory variable and the response variable is best described by a straight line, rather than a curve. 
+
+Fortunately, linear models are quite resilient to deviations from these assumptions. They will continue to produce reliable results when the errors are somewhat non-normal or there are moderate differences in variance between groups so long as the sample size is reasonably large and the design is roughly *balanced* (meaning that the sample sizes are the same or nearly so for each group). This means that unless our sample size is very small or the design is badly unbalanced (e.g. two groups with 30 measurements and one with 3) we do not have to be especially picky and can ignore minor violations of our assumptions. Nonetheless, major violations of these assumptions will invalidate our analysis so it's important to check these  every time you run one of these analyses. 
+
+Let's go back to the ANOVA we used for the root mass data in tutorial 1. Just to remind you, these are data from a study of how Plant-Soil Feedback (PSF) affects the growth of ragwort plants *Jacobea vulgaris*, originally published by Wang *et al*^1^. Ragwort plants were grown in soil which had been inoculated with water from soil which ragwort had previously grown in, and the water was passed through a series of filters to remove various components of the soil ranging from small invertebrates to bacteria. This boxplot shows the distribution of the data within the four factor levels for inoculum:
+
+```{r echo = FALSE}
+boxplot(root_mass ~ inoculum,
+        xlab = "Treatment",
+        ylab = "Root mass (g)",
+        data = ragwort,
+        col = "aquamarine4")
+```
+
+
+This is the ANOVA table we generated, which tells us that we have a significant effect of the factor `inoculum`.
+
+```{r}
+# Calculate ANOVA and save fitted model to object R1
+R1 <- lm(root_mass ~ inoculum, data = ragwort)
+
+# Generate ANOVA table
+print(anova(R1))
+```
+
+To bring up the diagnostic plots for a linear model you can just use the `plot()` function with the model object as an argument, e.g. `plot(modelname)`. This will give four separate plots by default, but the first two of these are really the most important so we'll use the `which = ` argument to plot just these. Firstly the diagnostic plots for the root mass ANOVA model.
+
+```{r fig.cap = "Diagnostic plots for the root mass ANOVA", fig.width = 4, fig.height = 4}
+
+plot(R1, which = 1:2)
+```
+
+The upper plot shows us the residuals versus the fitted values. This gives us lots of information about how good our model is at describing the patterns in the data and also lets us check for increases or decreases in variance with increases in the fitted values. Our plot has the residuals arranged in four groups. This is because there are only four fitted values, corresponding to the mean for each of the four factor levels. There are no obvious patterns in this plot that might cause concern. The degree of spread for each group is roughly the same, so the assumption of equal variances is probably OK, and there are no obvious extreme values and no indication of anything else amiss.
+
+The lower plot gives us information about how closely the residuals conform to a normal distribution. If they were perfectly normal they would all lie on the dotted line, but in practice this never happens. Here most of our data points are on or very close to the line but the ones with the most negative residuals are somewhat above the line and the ones with the most positive residuals are somewhat below the line. This tells us that the distribution of residuals has "thin tails" (or to use the statistical jargon it is somewhat "paltykurtotic"). In other words, the most negative and the most positive values are closer to zero we would expect were they following a normal distribution.
+
+Is this a problem for our analysis? Not really. As we've discussed, linear models are robust to small violations of these assumptions, and this is only a small violation. The residuals are symmetrically distributed, with no skew, and they do at least roughly conform to a normal distribution, albeit one with somewhat skinny tails.
+
+Finally, if you're wondering what the numbers on the plots are, R labels the three most extreme residuals on each plot with their index number. This is helpful and makes it easy to identify them if you need to do anything further.
+
+<br><br><hr>
+
+1 Wang, M., Ruan, W., Kostenko, O., Carvalho, S., Hannula, S.E., Mulder, P.P.J., Bu, F., van der Putten, W.H. & Bezemer, T.M. (2019) Removal of soil biota alters soil feedback effects on plant growth and defense chemistry. The New phytologist, 221, 1478–1491.
+
+
+## Exercise 1: diagnostics for the leaf mass ANOVA
+
+In tutorial 1 you fitted an ANOVA to another variable from the dataset on ragwort plant growth and PSY, testing whether the leaf masses of the plants varied between inoculum treatments. As a reminder here is the ANOVA:
+
+```{r}
+# Calculate ANOVA and save fitted model to object R1
+L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
+
+# Generate ANOVA table
+print(anova(R1))
+```
+We have a significant effect of the `inoculum` factor here as well, indicating that at least one mean is significantly different from at least one other mean.
+
+See if you can plot the two diagnostic plots for your fitted ANOVA on leaf mass.
+
+```{r root_anova_setup, echo = FALSE}
+# Calculate ANOVA and save fitted model to object R1
+L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
+```
+
+
+```{r diagnostics, exercise = TRUE, exercise.cap = "Diagnostics", exercise.lines = 5, exercise.setup = "root_anova_setup", fig.width = 4, fig.height = 4}
+
+
+```
+
+```{r diagnostics-hint-1}
+# You can use the code as before but substitute 
+# the name of your ANOVA object
+```
+
+
+```{r diagnostics-hint-2}
+# This is the solution
+# 
+plot(L1, which = 1:2)
+```
+
+Have a look at these plots. What do you see?
+
+```{r diagnostics-quiz, echo=FALSE}
+quiz(
+  caption = "Diagnostic plots questions",
+  question(
+    "Are the errors roughly normally distributed?",
+    answer("Yes: the points on the qq-plot are mostly on or close to the line, but there is one residual with an anomalously positive value", correct = TRUE),
+    answer("No: several of the points in the qq-plot are a long way from the line "),
+    answer("No, there is evidence that the residuals follow a skewed distribution"),
+    answer("Yes: the similar amounts of dispersion in the residuals versus fitted values plot indicates normal errors")
+    ),
+  question("Are the variances of the groups different enough to cause concern?",
+    answer("Yes: the variance is clearly increasing with increasing fitted values"),
+    answer("No: the points on the qq-plot are mostly on or close to the line, but there is one residual with an anomalously positive value"),
+    answer("Yes: smaller fitted values are clearly associated with more dispersion in the residuals"),
+    answer("No: the amount of dispersion in the residuals is roughly equal between groups, but there is one residual with an anomalously high value", correct = TRUE)
+  )
+)
+```
+
+<br><br>
+<details><summary><font size = +2>**Click here for more on the diagnostics**</font></summary>
+
+As you've probably seen the diagnostics for the leaf mass model are mostly well behaved, but there is one data point (30) which has an anomalously high positive residual - it seems to be sufficiently different from the others that we should maybe take a closer look. Let's visualise this particular point: here we'll draw a `stripchart()` and draw in data point 30 as a solid data point using `points()` to make it clear where it is.
+
+```{r}
+stripchart(
+  leaf_mass ~ inoculum,
+  data = ragwort,
+  pch = 1,
+  vertical = TRUE,
+  xlab = "Treatment",
+  ylab = "Leaf mass (g)",
+  col = "aquamarine4"
+)
+
+points(ragwort$leaf_mass[30] ~
+         ragwort$inoculum[30], pch = 16)
+```
+
+
+This point is in fact one of the "outliers" that showed up in the boxplot of these data that we looked at in the previous tutorial. At the time we suggested that it wasn't sufficiently different from the rest of the data to justify any special treatment such as exclusion. Now that we have this further evidence from the diagnostic plots, however, we might want to look rather more closely at whether this particular point is having any substantial effect on the conclusions from the ANOVA. We can refit our ANOVA with the data point removed by using the subset argument.
+
+```{r}
+L2 <- lm(leaf_mass ~ inoculum, data = ragwort, subset = -30)
+
+summary(L2)
+```
+The ANOVA is still highly significant (the last row of the summary gives the F-statistic from the ANOVA table) but have the other details changed? Let's compare it with the coefficients table for previous model.
+
+```{r echo = FALSE}
+L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
+```
+
+
+```{r}
+summary(L1)
+```
+In general the new model is a somewhat better fit all round: the R-squared values are higher, the F-statistic is larger and the marginal p-values in the coefficients table are smaller. The marginal p-value for the contrast between the 5µm and the 0.2µm treatment has also changed from 0.323, nowhere near statistical significance, to 0.0731, making this contrast now close to significance. What to do? This single data point is having some effect on our conclusions and our confidence in the patterns in these data so should we just remove it and present the analysis without it? Different people might give you different answers here but your author's opinion is no:  unless there is further, independent evidence that indicates a potential problem with this data point (e.g. was it noted during the experiment as being different from the rest? Was it accidentally given extra water? Was it left in a better lit position than the others for some reason) there is still no good reason to exclude it. The best thing to do is just to note in our report that there is one data point which is rather influential and that exclusion of it leads to a somewhat different result, giving us less confidence in whether there is a difference between two of the treatments or not. This way we present the reader with as much information about how certain or uncertain we are about the patterns in our data as we can and let them make up their own mind.
+
+</details>
+<br><br>
+
+
+
+## Exercise 2: analysing ungulate abundance near villages in Gabon
+
+As a second exercise, we'll look at a second data set from the study of animal abundance and distance to villages in Gabon  that we previously met in the tutorial on linear regression (data from Koerner *et al.* 2017^1^). Here we'll look at how the relative abundance of ungulates changes with distance from the nearest village. The data are loaded and the data frame is called `gabon_diversity`. Running `str()` lets us check that everything has imported properly.
+
+```{r}
+str(gabon_diversity)
+```
+
+
+As always, the first thing to do is to look at a scatterplot. The variable name for ungulate relative abundance is `RA_Ungulate` and that for distance is `Distance`.
+
+```{r ungulates_scatterplot, exercise = TRUE, exercise.lines = 5}
+
+```
+
+```{r ungulates_scatterplot-hint-1}
+# Use the plot() function and put in a formula
+# with RA_Ungulate as the response variable, then 
+# a tilde ~ and then the explanatory variable which
+# is Distance
+# 
+# Specify appropriate x- and y-axis labels using
+# xlab =  and ylab =
+# 
+# You also need to include the data = gabon_diversity argument
+```
+
+```{r ungulates_scatterplot-hint-2}
+#Here's a code framework for you to adapt:
+
+plot(response ~ explanatory,
+     data = gabon_diversity,
+     xlab = "",
+     ylab = "")
+```
+
+```{r ungulates_scatterplot-hint-3}
+#Here's the solution:
+
+plot(RA_Ungulate ~ Distance,
+     data = gabon_diversity,
+     xlab = "Distance from nearest village (Km)",
+     ylab = "Relative abundance of ungulates")
+```
+
+Looking at the plot, you can see that there seems to be something of a positive relationship between the variables, with higher values for ungulate relative abundance associated with longer distances from the nearest village. The pattern is less clear than for our birds however, and the data seem to be rather wedge-shaped, with more spread associated with longer distances. Fit a model and save it as an object called U1, and then call up a summary using `summary()`
+
+
+
+```{r ungulates_mod1, exercise = TRUE}
+
+```
+
+```{r ungulates_mod1-hint-1}
+#Here is a code framework to help you
+
+Name <- lm(response ~ explanatory, data = gabon_diversity)
+
+summary()
+```
+
+```{r ungulates_mod1-hint-2}
+# This is the solution
+
+U1 <- lm(RA_Ungulate ~ Distance, data = gabon_diversity)
+
+summary(U1)
+```
+
+OK, that seems to have worked and the summary is telling us that we have a significant relationship between distance and ungulate relative abundance. Let's jump straight in and look at the diagnostics. Once again we just want the first two plots so specify `which = 1:2` as an argument to `plot()`.
+
+```{r prepare-ungulates}
+U1 <- lm(RA_Ungulate ~ Distance, data = gabon_diversity)
+```
+
+```{r ungulate_diagnostics, exercise = TRUE, exercise.setup = "prepare-ungulates", fig.height = 4, fig.width = 4}
+
+
+```
+
+```{r ungulate_diagnostics-hint-1}
+# Just use plot() with the name of your saved
+# object as the first argument and which = 1:2
+# as the second argument
+```
+
+```{r ungulate_diagnostics-hint-2}
+# This is the solution
+
+plot(U1, which = 1:2)
+```
+
+Look at these residual plots and try to answer these questions.
+
+```{r ungulate_diagnostics_quiz, echo=FALSE}
+
+quiz(
+caption = "Ungulate diagnostics",
+question("What do you conclude from the plot of residuals versus fitted values?",
+  answer("There is no pattern and so our fitted model seems valid"),
+  answer("The plot is mostly OK but there are a couple of data points with large negative residuals that could be influencing our results"),
+  answer("There is strong evidence that the relationship is actually non-linear"),
+  answer("There is a wedge-shaped pattern of residuals, indicating that the variance is increasing with increasing distance", correct = TRUE)
+),
+
+question("What do you conclude from the qq plot of the residuals?",
+  answer("Most residuals are approximately normally distributed but there are a few data points with high positive residuals which are more positive than we would expect if they were following a normal distribution", correct = TRUE),
+  answer("Most residuals are approximately normally distributed but there are a few data points with high positive residuals which have smaller values than we would expect if they were following a normal distribution"),
+  answer("The qq-plot shows the typical pattern found when the errors are positively skewed"),
+  answer("The qq plot shows that the residuals are following a Poisson distribution")
+)
+)
+```
+
+## Exercise 3 dealing with heteroskedastic data
+
+The residuals versus fitted values plot for our ungulate regression confirms what we thought might be the case with regards to the increasing variance in the data as the distance from the nearest village increases. This means that we have *heteroskedastic* data and this is not an ideal one for fitting a linear model. We have a number of options now to try to deal with this. They are:
+
+1. Ignore it on the grounds that linear models are robust to violations of these assumptions
+2. Use an analysis which allows us to explicitly model the changing variance with the increasing distance (e.g. a weighted least squares approach using the `gls()` function from the nlme package).
+3. Transform our response variable somehow so that it is better behaved and reanalyse.
+
+Option 1 has its merits and we could consider this depending on what we're trying to do. If we're really just concerned about demonstrating that there's a relationship between the two variables and aren't particularly bothered about how well our line is estimated this might be OK (although if that's the case why not just do a correlation analysis?). If, however, we want do something like compare the degree of change with distance between ungulates and other mammal groups then we want our estimate of the slope and intercept to be as good as possible and we might not want to just leave it as it is.
+
+Option 2 is definitely a possibility but it's a little advanced for our purposes and probably best left for another day.
+
+This leaves us with option 3: transform our data and reanalyse. There are lots of options here and the most common approach would be repeat the analysis with log transformed data: taking logs has a bigger effect on large values than on small values, so it tends to reduce variance more for large values than for small ones. Log transforming these data isn't completely straightforward, however, because we have one data point with a value of zero and the log of this is -infinity. One solution to this is to add some constant, for example 1, to each datapoint before taking logs. This works and is something that is done a lot but it does mean we're changing our data quite a lot before analysing it and also the choice of constant (should we use 0.1? 1? 100?) can alter the distribution of the data and change the output of the analysis.
+
+An alternative to log-transformation is to use a square root transformation. This alters the distribution of the data somewhat less than a log transformation and also avoids the problem with the zero value in the dataset. Try refitting the model to the square root of relative abundance and check the diagnostic plots again. Remember that you can do the transformation within the formula in the `lm()` function call. Call your new model object [U2](https://en.wikipedia.org/wiki/Wikipedia:Lamest_edit_wars).
+
+```{r sqrt_lm, exercise = TRUE, fig.height = 4, fig.width = 4}
+
+
+```
+
+```{r sqrt_lm-hint-1}
+# The function to calculate a square root is sqrt()
+```
+
+```{r sqrt_lm-hint-2}
+# The arguments you want in your lm() function call is
+
+sqrt(RA_Ungulate) ~ Distance, data = gabon_diversity
+```
+
+```{r sqrt_lm-hint-3}
+# To plot the diagnostics you want:
+
+plot(U2, which = 1:2)
+```
+
+```{r sqrt_lm-hint-4}
+# This is the solution
+
+U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon_diversity)
+
+plot(U2, which = 1:2)
+```
+
+You can see that the residuals versus fitted values plot no longer has that wedge shape, and also that the qq plot looks rather better. Let's look at the summary output for our new model.
+
+```{r prepare-ungulates2}
+U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon_diversity)
+```
+
+
+```{r sqrt_lm_summary, exercise = TRUE, exercise.setup = "prepare-ungulates2"}
+
+```
+
+```{r sqrt_lm_summary-hint-1}
+# You just need to call summary on the U2 object
+
+summary(U2)
+```
+
+Here are some questions about the summary table. Remember this regression was fitted to the square root transformed relative abundance data, not the raw data.
+
+```{r ungulate_regression_quiz, echo=FALSE}
+
+quiz(
+caption ="Ungulate regression quiz", 
+question("Which of the following are true? More than one answer can be correct.",
+  answer("At a distance of zero the relative abundance of ungulates is predicted to be 0.490", correct  =TRUE),
+  answer("At a zero  the relative abundance of ungulates is predicted to be 0.699", message = "Answer 2: this is the square root of the predicted relative abundance of ungulates. You need to square the predicted values to get predicted relative abundances \n"),
+  answer("At a distance of 10km the relative abundance of ungulates is predicted to be 1.611", message = "Answer 3: You need to square the predicted values to get predicted relative abundances \n"),
+  answer("At a distance of 20Km the relative abundance of ungulates is predicted to be 6.36", correct = TRUE)
+),
+
+question("Which of the following are true? More than one answer can be correct.",
+  answer("For every Km distance from the nearest village, the relative abundance of ungulates is predicted to increase by 0.0912", message = "Answer 1: This is the slope for the relationship  between the square root of relative abundance and distance \n"),
+  answer("For every Km distance from the nearest village, the square root of the relative abundance of ungulates is predicted to increase by 0.0912", correct = TRUE),
+  answer("The fitted model explains 42.7% of the total variance in the response variable", correct = TRUE),
+  answer("The intercept is not significantly different from zero", message = "Answer 4: it is significantly different from zero as you can see from the marginal p-value of 0.035 \n"),
+  answer("The slope of the fitted line is significantly different from zero", correct = TRUE)
+)
+)
+```
+
+Finally, we need to visualise our data with the fitted model. We could plot the transformed data with the straight line we've fitted, but that would not allow for useful comparisons with other analyses where we haven't transformed the data, such as the birds. Furthermore, plotting the transformed data it makes it harder to get a good understanding of the pattern we've ddescribed in our data. A better option is to plot the back transformed predicted values onto the untransformed data. There are a variety of ways to do this but one option is to use the `curve()` function like this.
+
+```{r}
+
+# Plot the data
+plot(RA_Ungulate ~ Distance,
+     data = gabon_diversity,
+     xlab = "Distance from nearest village (Km)",
+     ylab = "Relative abundance of ungulates")
+
+# Generate a function which calculates backtransformed 
+# predicted values 
+U2_fitted <- function (x) (0.6997 + 0.0912 * x)^2
+
+# Draw the function on with curve. NB add = TRUE
+# means that the curve is plotted over the previous plot,
+# otherwise it will generate a new graph.
+curve(U2_fitted, add = TRUE)
+```
+
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

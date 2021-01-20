@@ -1,0 +1,86 @@
+---
+title: "Descriptive and Exploratory Statistics: Introduction"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Introduction to the biostatistics tutorials.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Introduction to the biostatistics tutorials
+
+
+Welcome to the biostatistics tutorials. These are a set of interactive tutorials developed for teaching statistics to biologists at both undergraduate and postgraduate levels. The tutorials cover a range of subjects from basic data visualisation and descriptive statistics through the fundamentals of statistical testing to advanced linear model fitting. There is a strong emphasis throughout on analysing real datasets in order to give experience with the messiness and uncertainty that can arise when deling with real data. 
+
+The concepts covered in these tutorials here are explained with both text and, in many cases, embedded video. There are interactive code exercises which are written for people with only a basic understanding of R, and there are quizzes that you can use to test your knowledge and understanding. 
+
+It is hoped in future to extend these tutorials to cover further subjects such as multivariate statistics, mixed effects models and generalised linear models.
+
+Please note that the current release of RStudio will include some tutorials by defualt in the tutorials pane which are not a part of this package. These are: Data basics, Filter observations, Create new variables, Set Up and Hello, Tutorial! There is not currently an easy way to remove these.
+
+These tutorials were written by Rob Knell, School of Biological and Chemical Sciences, Queen Mary University of London. <a href="mailto:R.Knell@qmul.ac.uk">Send Email</a>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license
+
+## Interactive coding exercises
+
+*Here's an example of a simple coding exercise with an empty box provided for entering the answer. Note that there is a "hints" button. Most of the exercises will have either this or a "solution" button. These are here to help you if you get stuck. If there is more than one hint then there will be a "next hint" button visible when you bring the first hint up. When you want to run the code click the "Run code" button on the right.*
+
+Write the R code required to add two plus five:
+
+```{r two-plus-two, exercise=TRUE}
+
+```
+
+```{r two-plus-two-hint-1}
+# You can just use the number keys and the
+# "+" symbol
+```
+
+```{r two-plus-two-hint-2}
+# This is the solution:
+
+2 + 5
+```
+
+*Some exercises come with code already in the box which you will need to edit.*
+
+This code will draw a scatterplot of two sets of random numbers. Change the plot symbol colour from "darkgreen" to "steelblue".
+
+```{r plot1, exercise=TRUE, exercise.lines = 5}
+plot(rnorm(20) ~ runif(20),
+		 pch = 16,
+		 col = "darkgreen")
+```
+
+```{r plot1-hint-1}
+# The argument that sets the colour is "col = "
+# You just need to replace "darkgreen" with "steelblue"
+# Don't forget the quote marks
+```
+
+```{r plot1-hint-2}
+# This is the solution:
+
+plot(rnorm(20) ~ runif(20),
+		 pch = 16,
+		 col = "steelblue")
+```
+
+## Multiple choice quizzes
+
+These are largely self explanatory. PLease note that if more than one answer can be correct this will be indicated.
+
+
+

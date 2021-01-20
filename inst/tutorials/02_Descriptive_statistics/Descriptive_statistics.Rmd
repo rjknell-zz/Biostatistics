@@ -1,0 +1,556 @@
+---
+title: "Descriptive and Exploratory Statistics 2: Descriptive statistics"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: "http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css"
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+    This tutorial takes you through the most important descriptive 
+    statistics, covering the mean and median as well as the variance,
+    standard deviation and inter-quartile range.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+load("height_immunity.rda")
+
+```
+
+
+
+## What is the purpose of descriptive statistics?
+
+Figure 1 below is a frequency histogram showing measures of lysozyme activity for 194 men and women, from a study of the relationship between height and immunity in humans published in 2017^1^. Lysozyme is an enzyme that causes bacteria to lyse (hence the name) and its activity here was measured by incubating blood serum with a suspension of bacterial cells and comparing the optical absorption after 20 minutes with a control sample with no serum. The data are loaded as a data frame called `height_immunity`
+
+```{r fig.cap = "**Figure 1** Frequency histogram of lysozyme activity for 194 people", fig.height = 4, fig.width = 4}
+
+
+# Draw the histogram
+hist(height_immunity$lysozyme,
+     col = "aquamarine4",
+     main = "",
+     xlab = "Lysozyme activity"
+)
+```
+
+When we visualise these data using a frequency histogram we can see that these values are centred around a value of roughly 0.35-0.4, with the majority of people in the sample having activity between 0.3 and 0.5 and almost all of them having values between 0.2 and 0.55. We can also see that the distribution of data is roughly symmetrical and approximately normally distributed, although there does seem to be some indication of slight negative skew --- the lower tail of the distribution looks rather fatter than the upper tail, and the lowest value is further from the centre of the distribution than the highest value is.
+
+
+
+
+We can see these things from just looking at the histogram, but if we want to go further we need to quantify these observations. If we want to know whether for example,some treatment we might use causes a change in lysozyme activity we need to calculate where the centre of the distribution is, and if we suspect that our treatment causes a change in the amount of variability in the data then we need to quantify the amount of spread, or *dispersion* there is in these data. Knowing this can also let us assess how likely or unlikely particular values might be: for example, if we had a person with an activity measured at 0.9 we might want to ask whether that high value was something that might be expected given the distribution of data, or whether that value might indicate an anomaly where perhaps there was something different about that person that might cause higher lysozyme activity, such as a genetic difference, a recent infection or something similar. We'll start with the ways that we can describe the centre of the distribution of data.
+
+<br><br><hr>
+
+^1^ Pawłowski, B., Nowak, J., Borkowska, B., Augustyniak, D. & Drulis-Kawa, Z. (2017) Body height and immune efficacy: testing body stature as a signal of biological quality. Proceedings. Biological sciences / The Royal Society, 284: 0171372
+
+## The three **M**s: Mean, Median and Mode as Measures of Central Tendency
+
+Before starting on this section, you might like to watch this short video explaining means and medians:
+
+![](https://youtu.be/alqrNPS7MYw)
+
+
+### Mean
+
+The most common statistic used to describe where the middle of a dataset is is the *arithmetic mean*, usually just called the *mean*. This is also the figure that most people are thinking of when they say the *average*. It's dead simple to calculate: you add all of the numbers up, and then you divide that figure by the number of datapoints. To put this more formally,
+
+
+
+$$ \large{\bar{x} = \frac{\Sigma x}{n}}$$
+
+
+Here, $\bar{x}$ represents the sample mean, the $\Sigma$ in the equation is a capital sigma and is used to mean "the sum of", $x$ refers to our data and $n$ is the sample size. So this is just saying  "to get the mean, add all the data together and divide my the sample size" but in statisticalese. If we had only sampled lysozyme activity from 7 people then our data might look like this:
+<br>
+$$0.37, 0.22, 0.50, 0.53, 0.38, 0.35, 0.23$$
+<br>
+and we could calculate the mean of these data as follows:
+
+<br>
+
+$$ \bar{x} = \frac{0.37 + 0.22 + 0.50+ 0.53+ 0.38+ 0.35+ 0.23}{7} = \frac{2.58}{7} = 0.37 $$
+<br>
+We end up with a value for $\bar{x}$ of just under 0.4, which concides nicely with the peak of the distribution. Since our $n$ is actually 194 it would be a little cumbersome to write out the calculation for the mean of all the data, but fortunately R has a built in function to calculate the mean called, surprisingly, `mean()`.
+
+```{r}
+mean(height_immunity$lysozyme)
+```
+
+Giving us a value for $\bar{x}$ which is surprisingly close to the one we got from just seven values. This is more by accident than design.
+
+### Median
+
+The next most common statistic that you'll see used to describe the centre of a distribution is the *median*. This is, quite simply, the number in the middle of the distribution. You *rank* all your data from low to high (or *vice-versa*), and the number in the middle is the median. So, returning to our seven number subset from before:
+
+$$0.37, 0.22, 0.50, 0.53, 0.38, 0.35, 0.23$$
+we can rank these, starting with the lowest:
+
+$$0.22, 0.23, 0.35, \underline{0.37}, 0.38, 0.50, 0.53.$$
+The underlined value, 0.37, is the one in the middle and so is the median. This turns out to be exactly the same as the mean, and again this is more by accident than anything else. You can see that the median divides the data set into two equal halves, so half of the data have values greater than the median and half have values less than the median.
+
+If you have an even number of data, of course there isn't a value in the middle when you rank your data. What you do in this case to calculate the median is to take the two numbers that are in the middle and calculate the mean of those two to get your median. 
+
+For the median of our overall lysozyme variable, again R can very simply calculate this for you using the `median()` function.
+
+```{r}
+median(height_immunity$lysozyme)
+```
+
+This returns 0.38 so fractionally higher than the 0.37 for the mean.
+
+### Mode
+
+The mode is the most common value in a dataset. It's not used as much as the mean or the median, mainly because when you have continuous data which can take any value the mode doesn't really have much meaning. Our lysozyme variable, for example, has 133 unique values out of 194 so asking which value is the most common isn't really going to tell us a lot.
+
+Modes can be valuable when you're looking at categorical data, where each value can only take one of a limited number of values such as juvenile/adult or green/blue/red/yellow or healthy/unwell/incapacitated/dead but in these cases you can usually just look at a frequency histogram. R doesn't even have a function to calculate the mode... somewhat perversely it does have a function called `mode()` but that tells you what the "storage mode" of a variable is:
+
+```{r}
+mode(height_immunity$lysozyme)
+```
+So now you know not to get confused there...
+
+### Central tendency exercises
+
+#### Means versus medians
+
+Here are some more numbers from our lysozyme data:
+
+0.22 0.39 0.36 0.45 0.41
+
+Use the `c()` function to set up a vector of these data called `X1`, and calculate the mean and the median. Remember that because `X1` is saved straight into the workspace and isn't part of a data frame you don't need to use $ or anything like that to refer to it: just use the name.
+
+```{r mean1, exercise = TRUE}
+
+```
+
+```{r mean1-hint-1}
+#Don't forget to put commas between each 
+#number for the vector, and make sure 
+#you have the brackets done correctly 
+#for all the functions you use.
+#
+#Don't forget that R is case sensitive so
+#if you called your vector X1 then trying to
+#calculate the mean of x1 won't work
+#
+```
+
+```{r mean1-hint-2}
+#For the vector you need to type this:
+
+X1 <- c(0.22, 0.39, 0.36, 0.45, 0.41)
+```
+
+```{r mean1-hint-3}
+#This is the solution:
+
+X1 <- c(0.22, 0.39, 0.36, 0.45, 0.41)
+mean(X1)
+median(X1)
+```
+
+This should give you a value of 0.366 for the mean and 0.39 for the median.
+
+Now let's look at what happens when we add another datapoint with a very high value. Somehow you've managed to measure someone's lysozyme activity as 20. Generate a vector called X2 with the previous numbers you used and also a sixth value set at 20, and calculate the mean and the median again.
+
+```{r mean2, exercise = TRUE}
+
+```
+
+```{r mean2-hint-1}
+#For the vector you need to type this:
+
+X1 <- c(0.22, 0.39, 0.36, 0.45, 0.41, 20)
+```
+
+```{r mean2-hint-2}
+#This is the solution:
+
+X2 <- c(0.22, 0.39, 0.36, 0.45, 0.41, 20)
+mean(X2)
+median(X2)
+```
+
+Compare the values for the mean and the median for both X1 and X2. What do you notice about how they respond to the addition of an extreme value to the data?
+
+Hopefully what you can see is that while the mean increased by about a factor of 10, from 0.37 to 3.64, the median hardly changed, going from 0.39 to 0.4. This illustrates a very important point about these two measures: the mean is *sensitive to outliers* which means that it responds strongly to very high or very low values, whereas the median does not and we would say that it is *robust to outliers*. In this case when we add the extra value to our data the mean changes to a number which is not really representative of the data at all: we have 5 values which are all well below 1, and 1 value of twenty, and somewhere in between them is the mean. The median on the other hand is still giving you some useful information about your vector of numbers.
+
+#### Summarising a new variable
+
+In the `height_immunity` data frame there is another variable called "phagocytic" which is a measure of the phagocytic response by the leucocytes for each person in the study. Calculate the mean and the median for this variable.
+
+*TIP* the `phagocytic` variable contains some missing data (`NA`). The default option for both the `mean()` and `median()` functions when presented with missing data is just to return `NA` and not calculate anything. If you want to get the mean or median calculated from the data that are present, you have to add this argument: `na.rm = TRUE` to your function call, so you'd have something like `median(my_variable_name, na.rm=TRUE)`. 
+
+```{r mean3, exercise = TRUE}
+
+```
+
+```{r mean3-hint-1}
+#As for the lysozyme data, we have to
+#tell R to look in the height_immunity data frame 
+#for the lysozyme vector. You do this by
+#typing the name of the data frame, a dollar
+#symbol and then the name of the variable.
+```
+
+```{r mean3-hint-2}
+#Don't forget to put a comma between the 
+#variable name and the na.rm = TRUE argument
+#for both function calls.
+#
+#Don't forget that R is case sensitive and
+#capital and lower case letters have to match
+#
+#Make sure that all your opening brackets 
+#have closing brackets
+```
+
+```{r mean3-hint-3}
+#This is the solution:
+
+mean(height_immunity$phagocytic, na.rm = TRUE)
+median(height_immunity$phagocytic, na.rm = TRUE)
+```
+
+Compare the values for the mean and the median. Are they roughly the same? If not what might this tell you about this variable?
+
+Let's have a look at the shape of the `phagocytic` variable. Use the `hist()` function to plot a frequency histogram for this variable `phagocytic`. Let's make it a nice plot so choose a suitable main title and set it using `main = "my_title"`, label the x axis "Phagocytic activity" using `xlab = ""` and use `col = ""` to set a colour for the bars. I'll suggest "steelblue" or "sienna3" as giving nice results, or alternatively [pick your own colour name from here](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf).
+
+
+Have a look at the histograms tutorial if you're really stuck and can't remember anything about how `hist()` works.
+
+```{r mean4, exercise = TRUE, fig.height = 5, fig.width =4, exericise.lines = 8}
+
+
+
+```
+
+```{r mean4-hint-1}
+#Don't forget to put a comma between the 
+#arguments in your hist() function call
+#
+#Don't forget that R is case sensitive and
+#capital and lower case letters have to match
+#
+#Make sure that all your opening brackets 
+#have closing brackets
+```
+
+```{r mean4-hint-2}
+#Remember that phagocytic is a variable in 
+#the height_immunity data frame, so you have to refer
+#to it as height_immunity$phagocytic
+#
+#The text for main = "", xlab = "" and col = ""
+#must all have quote marks at the beginning and the end
+```
+
+```{r mean4-hint-3}
+#This is the solution:
+
+hist(height_immunity$phagocytic,
+     main = "Histogram of phagocytic activity",
+     xlab = "Phagocytic activity",
+     col = "sienna3"
+)
+
+```
+
+
+You can see that the distribution of these data has some pronounced positive skew, with the main bulk of the data having values between 100 and 200, but some values being as high as 550-600. These high values at the end of the long positive tail in the data are having a bigger effect on the mean than they are on the median, so the value of the mean is pulled up such that it no longer really indicates where the majority of the data are to be found. The median, on the other hand, is once again still giving us a indication of where most of the data are. When dealing with skewed data, therefore, it's often better to use the median than the mean.
+
+## Measures of dispersion
+
+Before starting the section on the variance, here's a video explaining how to calculate the mean and standard deviation which you might find helpful
+
+![](https://youtu.be/ChDRxxLIFMU)
+
+
+### Variance
+
+
+
+
+Let's look at our mini-vector of data sampled from the lysozyme activity variable again. The numbers in our dataset are:
+
+$$0.37, 0.22, 0.50, 0.53, 0.38, 0.35, 0.23$$
+and we know that the mean is 0.37. What we want to quantify is how much spread there is in these data, or in other words how far from the mean our datapoints tend to be. We can find out how far from the mean each datapoint is by just subtracting the mean from it and then we could produce a summary of those numbers by adding them together. That's not especially useful, however, because some of the numbers will be negative and some positive, so what we do is square each difference, which will make them all positive, and add the squared differences together.
+
+| Value   |$\bar{x}$       |$x-\bar{x}$|$\left(x-\bar{x}\right)^2$|
+|:--------|:---------------|:----------|:-------------------------|
+| 0.37    | 0.37           |0          |0                         |
+| 0.22    | 0.37           |-0.15      |0.0225                    |
+| 0.50    | 0.37           |0.13       |0.0169                    |
+| 0.53    | 0.37           |0.16       |0.0256                    |
+| 0.38    | 0.37           |0.01       |0.0001                    |
+|0.35     | 0.37           |-0.02      |0.0004                    |
+|0.23     | 0.37           |-0.14      |0.0196                    |
+
+The sum of all of these squared differences is 0.0851, or to write it out formally:
+
+$$\Sigma \left(x-\bar{x}\right)^2 = 0.0851$$
+Remember that $\Sigma$ means "the sum of" and $\bar{x}$ is the symbol for the sample mean.
+
+This quantity is called the *Sum of squared deviations from the mean* or more commonly just the *Sum of squares* and it becomes very useful when doing a very important kind of analysis called ANOVA. It's not especially useful for our present purposes, however, because it's not useful when you're trying to compare how much dispersion there is between datasets. This is because it depends on the sample size: other things being equal, a variable with a sample size of 10 will have double the sum of squares of one with a sample size of 5. To account for this we could divide the sum of squares by the sample size, but in fact we divide it by something called the *degrees of freedom* which in this case is $n-1$ where $n$ is the sample size. This gives us a quantity called the *variance*, usually indicated by $\sigma^2$, so
+
+$$ \sigma^2 = \frac{\Sigma \left(x-\bar{x}\right)^2}{n-1} = \frac{0.0851}{6} = 0.01418$$
+The variance is one of the most commonly used measures of how much spread there is in a data set, and we don't need to calculate it by hand since R has a function to do it for us called `var()`, so we can calculate the variance of our 7 number subsample in R as follows:
+
+```{r}
+X1 <- c(0.37, 0.22, 0.50, 0.53, 0.38, 0.35, 0.23)
+var(X1)
+```
+
+This gratifyingly gives us the same value as when we did the calculation by hand.
+
+### Standard deviation
+
+The variance is a useful measure but because it consists of the sum of the *squared* deviations from the mean it is quite hard to relate back to the original data. Simply taking the square root of the variance, however, gives us a rather more intuitive measure, the *standard deviation*. This is usually represented by $\sigma$. For our data, the standard deviation is:
+
+$$\sigma = \sqrt{\sigma^2} = \sqrt{0.01418} = 0.119$$
+As with the variance, there is a built in function to calculate $\sigma$ which is `sd()`, so 
+
+```{r}
+sd(X1)
+```
+
+The standard deviation is the average difference between a value in our data and the mean: so if you were to pick one of these data points and calculate $x - \bar{x}$, on average the value would be 0.119. As shown in figure 2, $\sigma$ also has some special meaning when we're dealing with normal distributions: if you think of one of those bell-shaped curves, the standard deviation is the distance from the middle to the *inflexion point* on the curve, which is where the slope stops getting steeper and starts getting shallower again. 68% (Roughly 2/3) of all the datapoints in a normally distributed dataset will be within this area. Also important is the fact that if your data are distributed following a normal distribution, 95% of all the datapoints will lie within 1.96 (roughly 2) standard deviations of the mean. That 1.96 is a bit of a magic number in statistics and crops up in all sorts of places. Finally, 99% of all the values in a normally distributed dataset will be within 2.58 standard deviations of the mean.
+
+```{r echo=FALSE, fig.height = 5, fig.width = 6, fig.cap="**Figure 2** Probability density of a standard normal distribution with mean=0 and standard deviation=1 showing the areas defied by the mean plus or minus 1, 1.96 and 2.58 standard deviations. The code for this figure is given at the end of the chapter."}
+X1 <- seq(-3, 3, length = 300)
+Y1 <- dnorm(X1)
+plot(X1, Y1, type = "n", xlab = "x", ylab = "P(x)")
+abline(v=0, lwd=0.5,lty=2)
+
+x0 <- min(which(X1 >= -2.58))
+x1 <- min(which(X1 >= -1.96))
+x2 <- min(which(X1 >= -1))
+x3 <- max(which(X1 <= 1))
+x4 <- max(which(X1 <= 1.96))
+x5 <- max(which(X1 <= 2.58))
+
+polygon(x = c(X1[c(1, 1:x0, x0)]), y = c(0, Y1[1:x0], 0), col = "white", border = NA)
+polygon(x = c(X1[c(x0, x0:x1, x1)]), y = c(0, Y1[x0:x1], 0), col = "#deebf7", border = NA)
+polygon(x = c(X1[c(x1, x1:x2, x2)]), y = c(0, Y1[x1:x2], 0), col = "#9ecae1", border = NA)
+polygon(x = c(X1[c(x2, x2:x3, x3)]), y = c(0, Y1[x2:x3], 0), col = "#3182bd", border = NA)
+polygon(x = c(X1[c(x3, x3:x4, x4)]), y = c(0, Y1[x3:x4], 0), col = "#9ecae1", border = NA)
+polygon(x = c(X1[c(x4, x4:x5, x5)]), y = c(0, Y1[x4:x5], 0), col = "#deebf7", border = NA)
+polygon(x = c(X1[c(x5, x5:300, 300)]), y = c(0, Y1[x5:300], 0), col = "white", 
+    border = NA)
+
+
+points(X1, Y1, type = "l")
+
+abline(v=0, lwd=0.5,lty=2)
+
+text(0, 0.18, "68% of values \n within 1 sd \n of the mean", cex = 1,col="white")
+arrows(0.6,0.18,0.99,0.18,length=0.1,angle=20,col="white")
+arrows(-0.6,0.18,-0.99,0.18,length=0.1,angle=20,col="white")
+
+
+text(0, 0.04, "95% of values \n within 1.96 sd \n of the mean", cex = 1,col="white")
+arrows(0.72,0.03,1.95,0.03,length=0.1,angle=20,col="white")
+arrows(-0.72,0.03,-1.95,0.03,length=0.1,angle=20,col="white")
+
+text(2.5,0.1, "99% of values \n within 2.58 sd \n of the mean", cex = 1)
+arrows(2.58,0.06,2.58,0.015,length=0.1,angle=20)
+```
+
+### Interquartile range
+
+The interquartile range, or IQR, is an alternative way of describing the amount of dispersion in a variable. Like the median, it relies on the use of *ranked* data. If we rank all of the data in our variable, we already know that the middle datapoint is the *median*, and that the median divides our data into two halves. If we then take only the bottom half of the data we can find the number which divides that in half, and the same with the upper half. This gives us three numbers (the *lower quartile*, the *median* and the *upper quartile*), which between them divide our data into four equal sized units. 
+
+Before moving on to the rest of the tutorial, here's a short video explaining the IQR.
+
+![](https://youtu.be/uGf-DcLvA5M)
+
+Here's an example. Let's say we have counted the number of solitary bee burrows in 25 2m quadrats in some grassland. We can set up a vector with our data in, and then get R to rank it for us:
+
+```{r}
+counts <- c(4, 1, 2, 3, 7, 0, 7, 6, 5, 1, 3, 5, 3, 13, 8, 3, 6, 3, 3, 7, 4, 6, 5, 4, 4)
+
+counts.ranked <- counts[order(counts)]
+
+counts.ranked
+```
+
+There are 25 numbers so the 13th one, 4, is the median. The 7th number (3) is the lower quartile and the 19th (6) is the upper quartile
+
+0  1  1  2  3  3  **3**  3  3  3  4  4  **4**  4  5  5  5  6  **6**  6  7  7  7  8 13
+
+You can see how these divide the data into four equal subsets. The *interquartile range* is the range between the lower and upper quartiles --- in this case the IQR is 3. This is where the middle 50% of all the data are located so the interquartile range tells us how wide the spread of this middle half of the data set is.
+
+R has a couple of options for calculating the *IQR*. Firstly there is the function `IQR()` which does what it says on the tin. 
+
+```{r}
+IQR(counts)
+```
+
+Secondly, if you want to know what the values are for the quartiles rather than just the range use the `summary()` function which gives a series of useful statistics when you feed it a numerical vector:
+
+```{r}
+summary(counts)
+```
+
+### Measures of dispersion exercises
+
+Let's go back to our data on lysozyme activity. Use `var()` and `sd()` to calculate the variance and standard deviation of these data, and then use `IQR()` to calculate the interquartile range.
+
+```{r spread1, exercise = TRUE, exercise.lines = 6}
+
+```
+
+```{r spread1-hint-1}
+#Don't forget that lysozyme is a variable within
+#the height_immunity data frame, so you need to give the
+#name of the data frame, then a $ symbol, then the
+#name of the variable.
+#
+#Remember that R is case sensitive.
+#
+```
+
+```{r spread1-hint-2}
+#For the variance you need this:
+
+var(height_immunity$lysozyme)
+
+#you chould be able to get the sd and IQR in a similar way
+```
+
+```{r spread1-hint-3}
+#This is the solution:
+
+var(height_immunity$lysozyme)
+sd(height_immunity$lysozyme)
+IQR(height_immunity$lysozyme)
+```
+
+Now use `summary()` to tell you what the values are for the quartiles and the median for the lysozyme data.
+
+```{r spread2, exercise = TRUE}
+
+```
+
+
+```{r spread2-hint-1}
+#Don't forget that lysozyme is a variable within
+#the height_immunity data frame, so you need to give the
+#name of the data frame, then a $ symbol, then the
+#name of the variable.
+#
+#Remember that R is case sensitive.
+#
+```
+
+```{r spread2-hint-2}
+#This is the solution:
+
+summary(height_immunity$lysozyme)
+```
+
+Using the numbers you've generated, try to answer these questions
+
+```{r quiz, echo = FALSE}
+quiz(
+  question("Assuming our lysozyme data are normally distributed, roughly 2/3 of the data should lie between which pair of values?",
+    answer("0.07 and 0.64"),
+    answer("0.37 and 0.39"),
+    answer("0.22 and 0.54"),
+    answer("0.34 and 0.43"),
+    answer("0.29 and 0.46", correct = TRUE)
+  ),
+  question("If you were to rank the lysozyme data and divide it into four equal parts, which numbers would give you the range for the top quarter of the data (i.e. the part with the largest values)?",
+    answer("0.38 and 0.43"),
+    answer("0.43 and 0.64", correct = TRUE),
+    answer("0.34 and 0.38"),
+    answer("0.07 and 0.64"),
+    answer("0.38 and 0.64")
+  )
+)
+```
+
+Now use `summary()` to find out the quartiles for the phagocytic activity variable.
+
+```{r spread3, exercise = TRUE}
+
+```
+
+
+```{r spread3-hint-1}
+#Don't forget that phagocytic is a variable within
+#the height_immunity data frame, so you need to give the
+#name of the data frame, then a $ symbol, then the
+#name of the variable.
+#
+#Remember that R is case sensitive.
+#
+```
+
+```{r spread3-hint-2}
+#This is the solution:
+
+summary(height_immunity$phagocytic)
+```
+
+Look at the values for the first quartile, the median and the third quartile and think about the difference between the first quartile and the median and the median and the third quartile. Now compare that to the same values for the lysozyme data. Do you notice a pattern? I've summarised them in this table just to make things easier. 
+
+|Variable            | 1st quartile | Median | 3rd quartile |
+|:-------------------|:-------------|:-------|:-------------|
+|Lysozyme activity   |0.34          |0.38    |0.43          |
+|Phagocytic activity |145           |170     |231           |
+
+What you should see is that the quartiles for the lysozyme data, which is approximately normally distributed, are roughly symmetrical around the median: the difference between the first quartile and the median is 0.041 whereas the difference between the median and the third quartile is 0.048. For the phagocytic activity data, however, the quartiles are not symmetrical around the median. The difference between the first quartile and the median is 25, but the difference between the median and the third quartile is 61. This is because the phagocytic activity data are strongly positively skewed, so the second quarter of the data, below the median, occupies a narrow range whereas the third quarter, above the median, has a wider range. You can see this better on a histogram.
+
+```{r fig.width = 4, fig.height = 6, echo = FALSE, fig.cap = "**Figure 3** Frequency histograms for lysozyme activity (A) and phagocytic activity (B). The vertical lines show the quartiles and medians and the shaded boxes show the interquartile ranges."}
+
+par(mfrow = c(2,1))
+par(mar = c(3,3,2,2))
+
+hist(height_immunity$lysozyme,
+     main = "",
+     xlab = "lysozyme activity",
+     col = "sienna3")
+
+lys <- summary(height_immunity$lysozyme)
+
+polygon(x = c(lys[5], lys[5], lys[2], lys[2]), y = c(0,62,62,0), col = "#99ccff64", border = NA)
+
+abline(v = lys[2])
+abline(v = lys[3])
+abline(v = lys[5])
+
+text(0.05, 55, "A", font.lab = 2)
+
+
+hist(height_immunity$phagocytic,
+     main = "",
+     xlab = "phagocytic activity",
+     col = "sienna3")
+
+lys <- summary(height_immunity$phagocytic)
+
+polygon(x = c(lys[5], lys[5], lys[2], lys[2]), y = c(0,72,72,0), col = "#99ccff64", border = NA)
+
+abline(v = lys[2])
+abline(v = lys[3])
+abline(v = lys[5])
+
+text(50, 60, "B", font.lab = 2)
+
+par(mfrow = c(1,1))
+```
+
+You can see how the IQR for lysozyme activity is symmetrical, with the median in the centre, but that for phagocytic activity is not, and the median is towards the bottom end of the IQR. This is an example of why we sometimes prefer to use the median and IQR when we're describing skewed data, because these measures can capture the shape of the data better than, for example, the mean and standard deviation. There's lots more on this when we come to look at boxplots.
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license
+
+

@@ -1,0 +1,291 @@
+---
+title: "Linear models 7: Model selection"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  When there are multiple potentially important explanatory variables there are many possible models that we could fit to our data. How do we choose an appropriate set of models, and how do we select the best ones? 
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(ggplot2)
+library(RColorBrewer)
+
+options(scipen = 5)
+
+knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
+
+load("gabon_diversity.rda")
+
+gabon2 <- gabon_diversity[ ,c(2,4,5,6,7,10)]
+```
+
+## Principles of Model Selection
+
+The question of which model to select when we have a variety of potentially important explanatory variables is a complex one and there are differing opinions as to what constitutes the best approach. This video gives an introduction to the topic. It's a long one so take it easy.
+
+![](https://youtu.be/4pgaVtVBVjk)
+
+## Exercise one: Animal Abundance in Gabon
+
+For this exercise we'll be using the dataset which we previously used in the linear regression tutorial. Briefly, these are data published by Koerner *et al.* (2017)^1^ which are summaries of a series of repeated animal surveys on transects at varying distances from villages in Gabon. For each animal group Koerner *et al.* calculated the "relative abundance": the percentage of all encounters on that transect which were with that particular group. We will use the relative abundance of birds as our response variable.
+
+Koerner *et al.* collected data on a number of other aspects of each transect, so in addition to the distance from the nearest village we have the size of the nearest village (number of households), the type of land use (Park, Logging or Neither) the vegetation species richness measured as the number of tree species present in a series of plots along the transect, and the canopy cover as the percentage of the sky blocked by canpoy in each plot. Number of lianas, hunting intensity and land use were also recorded but we won't include these measures in our analysis for simplicity. The data are loaded as `gabon2`, which is a version of the `gabon_diversity` dataset we used before with some variables removed for simplicity.
+
+Check the gabon2 dataset using `str()`
+
+```{r gabon1, exercise = TRUE}
+
+```
+
+```{r gabon1-solution}
+str(gabon2)
+```
+
+
+Assuming the import is OK we will need to make LandUse into a factor using the `as.factor()` function.
+
+```{r gabon2, exercise = TRUE}
+
+```
+
+
+```{r gabon2-solution}
+gabon2$LandUse <- as.factor(gabon2$LandUse)
+```
+
+
+```{r gabon_setup, echo = FALSE}
+
+gabon2$LandUse <- as.factor(gabon2$LandUse)
+
+model1 <- lm(RA_Birds ~ Distance + LandUse + NumHouseholds + Veg_Rich + Veg_Canopy, data = gabon2)
+
+model2 <- update(model1,~.-LandUse)
+
+model3 <- update(model2,~.-Veg_Canopy)
+```
+
+
+Check the conversion to a factor went well using `str()` again.
+
+```{r gabon3, exercise = TRUE, exercise.setup = "gabon_setup"}
+
+```
+
+```{r gabon3-solution}
+str(gabon2)
+```
+
+Now we should do some exploratory analysis. Rather than going thorugh a full version of this, for the sake of brevity we'll just use a quick method of visualising a complex dataset. This involves using the `pairs()` function on a data frame, which will plot a matrix with a small scatterplot for each pairwise comparision of variables. 
+
+```{r echo = FALSE}
+
+gabon2$LandUse <- as.factor(gabon2$LandUse)
+
+model1 <- lm(RA_Birds ~ Distance + LandUse + NumHouseholds + Veg_Rich + Veg_Canopy, data = gabon2)
+
+model2 <- update(model1,~.-LandUse)
+
+model3 <- update(model2,~.-Veg_Canopy)
+```
+
+
+```{r fig.width = 7, fig.height = 7}
+pairs(gabon2)
+```
+
+
+Looking at this gives us a quick check that there are no seriously anomalous data points, and we can get an idea of where there might be some important relationships. You can see the negative relationship between relative bird abundance and distance from the nearest village, for example. We can also see if any of our potential explanatory variables are highly correlated which might indicate potential issues with multicollinearity. None of them look as though we need to start getting concerned at this point.
+
+<br><br>
+<hr>
+1: Koerner, S.E., Poulsen, J.R., Blanchard, E.J., Okouyi, J. & Clark, C.J. (2017) Vertebrate community composition and diversity declines along a defaunation gradient radiating from rural villages in Gabon. The Journal of applied ecology, 54, 805–814.
+
+## Initial model and diagnostics
+
+We need to produce a minimal adequate model to try to explain relative bird abundance in terms of the various potential epxlanatory variables that are available. As you will have gathered from the video, there are a number of ways of doing this (e.g. all subsets analysis, 'enlightened' model choice) and also a number of ways of deciding which is our preferred model (e.g. AIC, Significance testing). To run through examples of all of these would make this tutorial exceedingly long, so we'll just use a single approach for our data. We have little *a-priori* knowledge about this system, and since this is a largely exploratory analysis so we will take a model reduction approach, and for simplicities sake we'll use signficance  tests to choose between models. If you'd like to see how to analyse these data using AIC then Koerner *et al.* took that approach in their original paper. They also used a few more variables than we are dealing with here.
+
+Start by fitting a model called `model1` with `RA_Birds` as the response variable and the main effects of each of our potential explantory variables (`Distance`, `LandUse`, `NumHouseholds`, `Veg_Rich`, and `Veg_Canopy`). We have no particular reason to look for interaction terms and since we have a lot of main effects and the sample size is not especially large we will not investigate these.
+
+```{r gabon5, exercise = TRUE, exercise.lines = 7, exercise.setup = "gabon-setup"}
+
+
+```
+
+```{r gabon5-solution}
+model1 <- lm(RA_Birds ~ Distance +
+               LandUse +
+               NumHouseholds +
+               Veg_Rich +
+               Veg_Canopy,
+             data = gabon2)
+```
+
+The first thing to do is to check our diagnostic plots. We'll just look at the first two for the sake of simplicity -remember you can do this by adding the argument `which = 1:2` to the `plot()` function.
+
+
+```{r gabon5a, exercise = TRUE, exercise.setup = "gabon-setup"}
+
+```
+
+```{r gabon5a-solution}
+plot(model1, which = 1:2)
+```
+
+Have a look at these plots. What do you see?
+
+```{r diagnostics-quiz1, echo=FALSE}
+  question(
+    "which statements do you agree with? More than one answer can be correct.",
+    answer("The qq-plot shows positive skew", message = "Answer 1: this would be the case if the qqplot had a concave shape"),
+    answer("The residuals versus fitted values plot has a hint of curvature but this is probably due to one datapoint with a large negative residual", correct = TRUE),
+    answer("It's not possible to draw any conclusions because the sample size is too small"),
+    answer(
+      "The qq-plot is about as good as we might expect for a dataset of this size. One point has a rather larger negative residual than we might expect", correct = TRUE),
+    answer("There is evidence for heteroskedasticity in the residuals versus fitted values plot", message = "Answer 5. This would show up as a wedge shape")
+)
+```
+
+<details><summary>**Click here for more on the diagnostics**</summary>
+
+The diagnostics mostly look OK aside from the one data point (8) with a somewhat large negative residual. We'll proceed with our model simplification and see if this remains the case.
+
+<details>
+
+## Model simplification
+
+Now we will proceed with simplifying our model to generate a minimal adequate model. The first thing to do is to assess the significance of each term in the model using `drop1()`. This compares the goodness of fit of models with and without each term that can be tested without violating the principle of marginality, which in this case is all of them since there are no interaction terms. So `drop1` compares our full model with a reduced model with all the terms excapt `Distance` to give us an assessment of whether a model with `Distance` has significantly better explanatory power, then the same for a model with all the terms except `LandUse`, and so on. Don't forget you need to specify `test = "F"` as an argument for `drop1()`.
+
+Finally, because the rendering engine that formats these tutorials has a thing for trying to make tables pretty that is sometimes actually a hindrance, please enclose your `drop1()` function call in a `print()` function. This is to make the output that you see look like the standard R output and is just something you need to do within the tutorial.
+
+```{r gabon6, exercise = TRUE, exercise.setup = "gabon-setup"}
+
+
+```
+
+```{r gabon6-hint-1}
+# Just give drop1 the name of our model 
+# as the first argument and then test = "F"
+# as the second
+# 
+# Please remember to use print() as well
+```
+
+```{r gabon6-hint-2}
+# This is the solution
+print(drop1(model1, test = "F"))
+```
+
+So one model term, `Distance`, is significant but the rest are not, although two are close. The one which is furthest from significance is `LandUse` so we'll fit a second model (`model2`) without that variable and run `drop1()` on our new model.
+
+```{r gabon7, exercise = TRUE, exercise.lines = 8, exercise.setup = "gabon-setup"}
+
+
+```
+
+
+```{r gabon7-hint-1}
+# Just use the code you used for model 1
+# without the LandUse term, and the run drop1
+# on the new model. Don't forget to include
+# the test = "F" argument for drop1
+# 
+# Please remember to use print() as well
+```
+
+```{r gabon7-hint-2}
+# This is the solution
+
+model2 <-
+  lm(RA_Birds ~ Distance + 
+       NumHouseholds + 
+       Veg_Rich + 
+       Veg_Canopy, data = gabon2)
+
+print(drop1(model2, test = "F"))
+```
+
+Removing `LandUse` has changed things a lot. We now have three apparently significant terms, and only `Veg_Canopy` remains as non-significant. As an aside it's quite normal for p-values to change like this as we remove terms, because the error variance will change, leading to different F-statistics. Sometimes it goes the other way and terms which are significant in more complex models lose their significance as the model simplifies.
+
+We still need to remove `Veg_Canopy` and check the model that is produced. Our next model shuld be called `model3` and you'll need to run `drop1()` on it to assess the signficance of the remaining terms. Just to avoid any confusion, we're removing `Veg_Canopy` from `model2` so our new model should have neither `LandUse` nor `VegCanopy` as explanatory variables.
+
+```{r gabon8, exercise = TRUE, exercise.lines = 7, exercise.setup = "gabon-setup"}
+
+
+```
+
+
+```{r gabon8-hint-1}
+# Just use the code you used for model 2
+# without the Veg_Canopy term, and the run drop1
+# on the new model. Don't forget to include
+# the test = "F" argument for drop1
+# 
+# Please remember to use print() as well
+```
+
+```{r gabon8-hint-2}
+# This is the solution
+
+model3 <- lm(RA_Birds ~ Distance + 
+               NumHouseholds + 
+               Veg_Rich, data = gabon2)
+
+print(drop1(model3, test = "F"))
+```
+
+All three of the remaining explanatory variables are significant so we've arrived at our *Minimal Adequate Model*: a model with any of the three remaining terms has does significantly less well at explaining the patterns in the RA_Birds variable.
+
+We should probably check those diagnostic plots again.
+
+```{r}
+plot(model3, which = 1:2)
+```
+
+These look very similar to before. That pesky data point 8 still has a larger negative residual than we'd like and there's a worry that it might be having a strong effect on the overall model. One option if you're worried about a datapoint like this is to run the analysis again and see if it makes a material difference. For the sake of brevity we won't go through this process, but if we were to do it we would end up with a very similar final model, which tells us that we don't really need to worry about this point.
+
+## Interpretation
+
+Now that we have arrived at our minimal adequate model, we need to understand what it is telling us. This is where the `summary()` function and the coefficients table becomes important.
+
+```{r gabon9, exercise = TRUE, exercise.setup = "gabon-setup"}
+
+
+```
+
+```{r gabon9-solution}
+summary(model3)
+```
+
+Have a look at the coefficients table. All of the remaining explanatory variables are continuous so the table is reasonably simple to interpret. Remember that in a linear model the terms are entered sequentially.
+
+```{r cofficients-quiz1, echo=FALSE}
+  question(
+    "which statements do you agree with? More than one answer can be correct.",
+    answer("The relative abundance of birds increases with the number of households in the nearest village", message = "Not quite: see the answer to the next question"),
+    answer("One the effect of distance has been controlled for, the relative abundance of birds increases with the number of households in the nearest village", correct = TRUE),
+    answer("Once the effects of distance and size of the nearest village have been partialled out of the data, the relative abundance of birds declines with increasing species richness of vegetation", correct = TRUE),
+    answer(
+      "For every kilometer further to the nearest village, the relative abundance of birds decreases by 1.39", correct = TRUE),
+    answer("The mean for vegetation richness is equal to 104.56 - 2.60", message = "Answer 5. That would only be the case if we were dealing with a single factor ANOVA")
+)
+```
+
+The effect of village size (`NumHouseholds`) is worth a closer look because this is not significant if we analyse the variable by itself:
+
+```{r}
+cor.test(gabon2$NumHouseholds, gabon2$RA_Birds)
+```
+
+This is an example of how including an explanatory variable in a more complex model can sometimes reveal patterns that are not clear when we consider the variable by itself.
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

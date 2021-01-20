@@ -1,0 +1,474 @@
+---
+title: "Descriptive and Exploratory Statistics 4: Scatterplots"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+    Scatterplots are the most common way to visualise bivariate data
+    where there are two variables measured per individual. This tutorial
+    explains how to plot them in R and gives examples of the most common
+    patterns to watch for.
+---
+
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 5)
+
+load("malawi_carbon.rda")
+load("quolls.rda")
+load("worldbank.rda")
+load("carnivores.rda")
+load("mammal_longevity.rda")
+```
+
+## Introduction
+
+Very often we find ourselves dealing with data where there is more than one measurement made on each individual that we are studying, and a lot of the time we are interested in the relationships between these variables --- as an example, if we're studying plant diseases we might want to know whether there is a relationship between the number of leaves showing infection on a plant and the growth rate of the plant, or we might be interested in whether people with an autoimmune disease also have high rates of reactivity to IgA antibodies. When we have *bivariate* data like this (bivariate meaning that for each individual we have two measurements) we can of course go through our normal exploratory look at each individual variable, using histograms or boxplots to visualise the shape of the distribution and to give us an idea of where the variables are centred and how much spread there is. Once we've done that, however, we can go further and look at the two variables together. For numeric data this would usually be done by plotting a *scatterplot* with one variable on the x-axis and one on the y-axis. Scatterplots are particularly useful tools for exploratory data analysis because you can easily see whether there appears to be any relationship between your variables, you can check for anomalous data, you can see if there is any curvature in the relationship and you can check for any signs of *structure* or *grouping* in your data.
+
+Here's a video which runs through the basics of what scatterplots are and what the common patterns that you might see are.
+
+![](https://youtu.be/sqVqNygszL0)
+
+## Scatterplot basics
+
+```{r echo = FALSE}
+# quolls <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/ChartersetalQuolls.csv")
+# quolls$sex <- as.factor(quolls$sex)
+# colours1 <- c("steelblue", "sienna3")
+# worldbank <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv", stringsAsFactors=TRUE)
+# carnivores <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/carnivores.csv")
+# mammal_longevity <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/mammal_longevity.csv", stringsAsFactors = TRUE)
+# malawi_carbon <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/malawi_carbon.csv")
+```
+
+Here's an example of a scatterplot, and the R code used to draw it. The `plot()` function in R will generate a scatterplot if you give it two numerical variables. You might notice the way that the two variables are entered as a *formula* so the y-axis variable comes first, followed by the x-axis one and they are separated by a tilde `~`. You can also specify `x=` and `y=` as separate arguments for a plot and you'll get the same result. The best thing to do is to pick one method and stick with it so there is no confusion. The data are from a study published by Charters *et al.* in 2018^1^ looking at physical performance in [Northern Quolls](https://en.wikipedia.org/wiki/Northern_quoll), a small marsupial predator found in Australia. Note that both grasping force and maximum oxygen uptake have been 'standardised' --- converted to variables with a mean of zero and a standard deviation of 1 --- this is for a multidimensional analysis that the authors did, but it doesn't really affect us here except that units don't really make much sense for these variables. The data are loaded as the `quolls` dataframe.
+
+
+```{r}
+plot(quolls$grasp ~ quolls$Max_O2_consump, #Variables to be plotted
+     pch = 16,  #Plot with solid circles for plot characters
+     col = "steelblue", #Nice colour for plotting points
+     xlab = "Maximum oxygen consumption", #x-axis label
+     ylab = "Grasping force", #y-axis label
+)
+```
+
+You can look at this scatterplot and you can see a pattern: the animals with high levels of oxygen consumption have stronger bite forces than do the animals with low levels of oxygen consumption --- there is a *positive correlation*. You can also see that there is a fair amount of noise in the data, so there are some animals with high oxygen consumption and low grasping force, and some with low oxygen consumption and fairly high grapsing forces. Overall though the pattern is reasonably clear (if you're an ecologist you'd be pleased with this degree of correlation, most physicists on the other hand would give up and do something else if they got data like these). There are no obvious problem data points, and there is no indication of a curved relationship, or any obvious clustering that might indicate groups in the data. I'd happily go on to do further analysis on these data without any concerns.
+
+<br><br><hr>
+
+1. Charters, J.E., Heiniger, J., Clemente, C.J., Cameron, S.F., Amir Abdul Nasir, A.F., Niehaus, A.C. & Wilson, R.S. (2018) Multidimensional analyses of physical performance reveal a size‐dependent trade‐off between suites of traits. Functional ecology, 32, 1541–1553.
+
+## Two simple scatterplots
+
+The data set `malawi_carbon` contains data on two lung immunity measures (oxidative burst activity and phagocytic activity) from people exposed to chronic carbon particulates in their homes in Malawi. These data were originally published by Rylance *et al.* (2015)^1^ as part of a study of how exposure to smoke from cooking fires affects lung function. Let's have a look at how these two variables relate to particulate exposure.
+
+Start with the phagocytic activity data. Use the R code we used in the previous example as a guide. You'll need to use the `plot()` function and to specify the x- and y- variables by either putting in a formula of the form `y~x` or by specifying `x=` and `y=` arguments. The variables in question are called `log_carbon`, which should go on the x-axis, (the carbon data has been log transformed: more on this later) and the variable for the phagocytic activity is called `phagocytosis` and this should go on the y-axis. Both of them are in the `malawi_carbon` data frame so you need either to refer to them using the dataframe$variable syntax or just give the names of the variables but add a `data = malawi_carbon` argument to your function call. Finally, you'll need to put in some sensible x-axis and y-axis labels using `xlab = ""` and `ylab = ""`. I suggest "Log carbon score" for the x-axis and "Phagocytosis activity (%)" for the y-axis --- the phagocytosis score is actually a the percentage of macrophages which took up flourescent silica beads.
+
+```{r scatterplot01, exercise = TRUE, exercise.lines = 8}
+
+```
+
+```{r scatterplot01-hint-1}
+#You can specify the x- and y- variables like this:
+
+plot(phagocytosis ~ log_carbon,... )
+
+#in which case you need to specify
+
+data = malawi_carbon,... )
+
+#as one of your arguments.
+
+#Alternatively, you can do it like this
+
+plot(malawi_carbon$phagocytosis ~ malawi_carbon$log_carbon,
+     
+#If you do this you don't need to 
+#say where the data are.
+
+#Don't forget to add your other arguments. 
+
+
+```
+
+```{r scatterplot01-hint-2}
+
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r scatterplot01-hint-3}
+#This is the solution
+
+plot(phagocytosis ~ log_carbon,
+     data = malawi_carbon,
+     xlab = "Log carbon score",
+     ylab = "Phagocytic activity (%)")
+```
+
+Have a look at the plot. Do you see any relationship between carbon exposure and phagocytic activity? Are there any clusters of data or obviously problematic data points with unlikely values? Don't overthink this: your first impressions will probably be correct.
+
+Noew let's plot our other measure of lung immune function, oxidative burst activity, against carbon score. You can use the same code as before but you need to replace `phagocytosis` with `oxidative_burst` and you'll need a new y-axis label. I suggest "Oxidative burst index": it doesn't really have units.
+
+```{r scatterplot02, exercise = TRUE, exercise.lines = 8}
+
+```
+
+```{r scatterplot02-hint-1}
+#You can specify the x- and y- variables like this:
+
+plot(oxidative_burst ~ log_carbon,... )
+
+#in which case you need to specify
+
+data = malawi_carbon,... )
+
+#as one of your arguments.
+
+#Alternatively, you can do it like this
+
+plot(malawi_carbon$oxidative_burst ~ malawi_carbon$log_carbon,
+     
+#If you do this you don't need to 
+#say where the data are.
+
+#Don't forget to add your other arguments. 
+
+
+```
+
+```{r scatterplot02-hint-2}
+
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r scatterplot02-hint-3}
+#This is the solution
+
+plot(oxidative_burst ~ log_carbon,
+     data = malawi_carbon,
+     xlab = "Log carbon score",
+     ylab = "Oxidative burst index")
+```
+
+Compare this plot to the previous one. Do they look similar? Is there a pattern in one of them that you don't see in the other?
+
+<br>
+<details><summary><b>Click here for explanation</b></summary>
+Neither plot shows a strong pattern, there are no obvious problem data points. Looking at the first there seems to be no relationship between carbon exposure and phagocytic activity, either positive or negative. Looking at the second plot, however, we can see what apppears to be a negative correlation between oxidative burst index and carbon score, with the higher values of oxidative burst activity all being associated with low carbon scores. It's not clear, and the plot doesn't give us much confidence that this isn't simply a consequence of sampling error --- it's possible that the pattern we can see could have arisen simply by chance. For those who are familiar with statistical testing we can look at the significance of the correlation coefficient to give us an indication of how likely this is.
+
+```{r}
+cor.test(malawi_carbon$oxidative_burst, malawi_carbon$log_carbon)
+```
+
+The p-value for the correlation is 0.034 which is indeed less than the cut-off for statistical significance at 0.05 so we do have a statistically significant negative correlation. The data are noisy though and the sample size is fairly small so we should be very cautious interpreting this pattern.
+</details>
+
+<br><br><hr>
+
+1. Rylance, J., Chimpini, C., Semple, S., Russell, D.G., Jackson, M.J., Heyderman, R.S. & Gordon, S.B. (2015) Chronic Household Air Pollution Exposure Is Associated with Impaired Alveolar Macrophage Function in Malawian Non-Smokers. PloS one, 10, e0138762.
+
+## Increasing variance
+
+Now we'll use a dataframe loaded called `worldbank` which has data for 186 countries from 2014 as published by the World Bank.
+
+One of the variables is called `Forest_area` and represents the percentage of the land surface for each nation which is forested. A second variable is called `Precipitation` and is the annual precipitation in mm. Try drawing a scatterplot of forest area, on the y-axis, versus precipitation on the x-axis. We'll make the plot look a bit nicer by using filled circles for our plot symbols, which we can do by using the argument `pch = 16`. We'll give them some colour as well: I suggest `aquamarine4` or `steelblue` which we can specify by using the `col = "colour name"` argument. Don't forget those quote marks.
+
+
+
+```{r scatterplot1, exercise = TRUE, exercise.lines = 8}
+
+```
+
+```{r scatterplot1-hint-1}
+# You can use the same code we used for the first example.
+# You just need to change the two variable names and the axis labels.
+```
+
+```{r scatterplot1-hint-2}
+#Remmeber that the two variables are in the worldbank
+#data frame so you need to use the syntax 
+#worldbank$Forest_area (data frame name, $, variable name),
+#or you need to add a data = worldbank argument to the 
+#function call.
+
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r scatterplot1-hint-3}
+#This is the solution
+
+plot(worldbank$Forest_area ~ worldbank$Precipitation,
+     pch = 16,
+     col = "steelblue",
+     xlab = "Precipitation (mm)",
+     ylab = "Forest area (%)")
+```
+
+Have a look at this and see what patterns you can see. Can you see a correlation? Are there any obviously problematic data? Are there any other patterns in the data?
+
+
+
+<br>
+<details><summary><b>Click here for explanation</b></summary>
+
+The spread of data indicates a positive correlation: in general nations with low percentages of forest cover have low precipitation, and *vice-versa*. There are no obviously anomalous datapoints (we might look for percentages <0 or >100, or unfeasibly high precipitation). This plot is rather different from the previous one, however, because the amount of dispersion in the data increases as the amount of precipitation increases --- when precipitation is low there is very little variance in the data and all the nations with low precipitation have little or no forest cover. This is hardly surprising since these countries are essentially deserts. When precipitation is high, however, there is a complete range of percent forest area, from almost none to close to 100%. This increasing variance (which statisticians refer to by a very polysyllabic word, *heteroskedasticity*, meaning that the variance is heterogeneous) is a common pattern in all sorts of data and is something that can cause problems with certain analyses, so you need to be aware of it.
+</details>
+
+## Skew data and log transformation
+
+The `carnivores` data frame contains brain mass and body mass data for 199 species of carnivorous mammals, originally published as part of a larger dataset by Burger *et al.* in 2019^1^. The variable for brain mass is called `Mean_brain_mass_g` and that for body mass is `Mean_body_mass_Kg`. Plot a scatterplot of brain mass against body mass and have a look at it. This plot is better with open symbols so use the default option: you can remove the `pch = 16` line. 
+
+```{r scatterplot2, exercise.lines = 8, exercise = TRUE}
+
+```
+
+```{r scatterplot2-hint-1}
+
+# For the plot,you can use the same code we used for the previous 
+#example again.
+#
+# You just need to change the two variable names and the axis labels.
+```
+
+```{r scatterplot2-hint-2}
+#Remember that the two variables are in the carnivores
+#data frame and you need to use the syntax 
+#data frame name, $, variable name
+
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r scatterplot2-hint-3}
+#This is the solution
+
+plot(
+  carnivores$Mean_brain_mass_g ~ carnivores$Mean_body_mass_Kg,
+  col = "steelblue",
+  xlab = "Mean body mass (Kg)",
+  ylab = "Mean brain mass (g)"
+)
+```
+
+What do you see? 
+
+<br>
+<details><summary><b>Click here for explanation and more</b></summary>
+It looks as though there is a increasing, but curved, relationship between brain mass and body mass but the plot is very hard to interpret because almost all of the data are very close to the origin. This is because both brain mass and body mass are strongly positively skewed: here's a histogram of body mass to make the point.
+
+
+```{r fig.width = 4, fig.height = 5, fig.cap = "**Figure 3** Frequency histogram of body mass for 199 species of carnivore"}
+hist(carnivores$Mean_body_mass_Kg,
+     breaks = 30,
+     col = "sienna3",
+     main = "",
+     xlab = "Mean body mass (Kg)"
+     )
+```
+
+When we have data like this then one way to try to make the plot more readable is to *log-transform* the data, or alternatively to plot it on a log scale. To log transform it you would use the `log()` function, so your function call might look like this:
+
+```{r eval = FALSE}
+plot(log(carnivores$Mean_brain_mass_g) 
+  ~ log(carnivores$Mean_body_mass_Kg),...
+```
+
+but we're going to plot the data on a log scale instead. This involves transforming the *axes* rather than transforming the individual data points, and you can do this in R by adding the `log = "xy"` argument to your `plot()` function call. Note that if you just wanted the y-axis on a log scale you could use `log = "y"` and for just the x-axis `log = "x"`. Have a go at generating a new plot, but with the axes on a log scale.
+
+*TIP* if you just add the `log = "xy"` argument R will plot the graph with scientific notation on the x-axis, so 1e+03 instead of 1000. To stop this, insert this before the `plot()` command:
+
+`options(scipen = 999)`
+
+This sets a *global option* in R and stops it using scientific notation. 
+
+
+
+```{r scatterplot3, exercise = TRUE, exercise.lines = 10}
+
+```
+
+```{r scatterplot3-hint-1}
+# You can use the same code we used for the previous example again.
+# You just need to add the log = "xy" argument, and add the options... line before the plot function call.
+```
+
+```{r scatterplot3-hint-2}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r scatterplot3-hint-3}
+#This is the solution
+
+options(scipen = 999) 
+
+plot(
+  carnivores$Mean_brain_mass_g ~ carnivores$Mean_body_mass_Kg,
+  col = "steelblue",
+  xlab = "Mean body mass (Kg)",
+  ylab = "Mean brain mass (g)",
+  log = "xy"
+)
+```
+
+You can see that when these data are plotted on a log-log scale (notice how the x-axis ticks go from an increase of 900g between the first and second and 900Kg between the last two) has completely changed the way the data are visualised, and now we have an impressively tight straight line relationship.
+
+</details>
+
+<br><br><hr>
+1. Burger, J.R., George, M.A., Leadbetter, C. & Shaikh, F. (2019) The allometry of brain size in mammals. Journal of mammalogy, 100, 276–283. 
+
+## Data with structure
+
+The longevity dataset has data on maximum recorded lifespan, body mass and various ecological factors for 909 species of birds and mammals, from a publication by Healy *et al.* (2014)^1^.  We're going to look at the relationship between longevity and body mass for a subset of these data consisting of the data from the mammal orders with more than 30 species represented. This subset of data is in the `mammal_longevity` data frame.
+
+The variables you need to plot are `maximum_lifespan_yr` and `mass_g`. This time, since the name of the data frame is long and unwieldy, we'll just use the variable names in the `plot()` call and then add an argument `data = mammal_longevity` which will tell R where to look. These data need to be plotted in log space to be visualised as with the previous example, so you'll need to have the `log = "xy"` argument in there.
+
+Don't forget to put some sensible axis names in using `xlab = ` and `ylab = `. I'd recommend plotting this with the default plot symbols, so you don't need to specify anything with `pch = `.
+
+```{r scatterplot4, exercise.lines = 15, exercise = TRUE}
+
+```
+
+```{r scatterplot4-hint-1}
+# You can use the same code we used for the previous 
+# example again, just modified for the present plot.
+```
+
+```{r scatterplot4-hint-2}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r scatterplot4-hint-3}
+#This is the solution
+
+options(scipen = 999) 
+
+plot(
+  maximum_lifespan_yr ~ mass_g,
+  col = "steelblue",
+  xlab = "Mean body mass (g)",
+  ylab = "Maximum lifespan (years)",
+  log = "xy",
+  data = mammal_longevity
+)
+```
+
+
+Have a good look at the plot. Is there a relationship? Are there any problem data points? Is there any clustering or other evidence of structure?
+
+<br>
+<details><summary><b>Click here for explanation and more</b></summary>
+This is kind of a weird plot... there seems to be a positive relationship, but there is something strange going on with some of the data for very small mammals giving a "hump" sticking upwards, and there is a bit of clustering in the rest of the data that might represent some underlying structure there. It's likely that at least some of this structure reflects the phylogenetic relationships in the mammalia, so let's see  what happens when we colour-code our data by order. This can be done very easily by just adding `col = order` as an argument to your `plot()` function call, but you have to remember to declare order as a factor first before you start the `plot()` function. Use this line of code to do this:
+
+```{r eval = FALSE}
+mammal_longevity$order <-
+  as.factor(mammal_longevity$order)
+```
+
+We will also need a legend so that we know which colour corresponds to which order, and I'll give you the code for this, which needs to be added after you've finished the `plot()` instruction.
+
+```{r eval = FALSE}
+legend(
+  "bottomright",  #Put the legend in the bottom 
+                  #right corner of the plot
+  fill = 1:5,     #Filled boxes with colours 1 - 5 from 
+                  #the default R colour palette
+  legend = levels(mammal_longevity$order), #Extract the
+                  #names of the levels of the order factor
+  cex = 0.8       #Make the text a bit smaller
+)
+```
+
+
+
+```{r scatterplot5, exercise.lines = 25, exercise = TRUE}
+
+```
+
+```{r scatterplot5-hint-1}
+# You can use the same code we used for the previous 
+# example again, just modified for the present plot.
+```
+
+```{r scatterplot5-hint-2}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+#
+#Make sure that the code for the legend is after
+#the plot function is complete, so after the 
+#closing bracket
+```
+
+```{r scatterplot5-hint-3}
+#This is the solution
+
+mammal_longevity$order <-
+  as.factor(mammal_longevity$order)
+
+options(scipen = 999) 
+
+plot(
+  maximum_lifespan_yr ~ mass_g,
+  col = order,
+  xlab = "Mean body mass (g)",
+  ylab = "Maximum lifespan (years)",
+  log = "xy",
+  data = mammal_longevity
+)
+
+legend(
+  "bottomright",  #Put the legend in the bottom 
+                  #right corner of the plot
+  fill = 1:5,     #Filled boxes with colours 1 - 5 from 
+                  #the default R colour palette
+  legend = levels(mammal_longevity$order), #Extract the
+                  #names of the levels of the order factor
+  cex = 0.8       #Make the text a bit smaller
+)
+```
+
+This new plot reveals some detailed structure within this dataset related to the relatedness of the animal species plotted. Have a think about what it shows and then have a go at answering these questions. NB Chiroptera are bats and Artiodactyla are even-toed ungulates.
+
+```{r quiz1, echo = FALSE}
+quiz(
+  question("Which of the following are true? More than one answer can be correct.",
+    answer("The artiodactyls and carnivora have relatively long lives for their body weights"),
+    answer("Rodents live surprisingly long given that most of them are small"),
+    answer("On average, a primate of a particular body mass will live longer than an artiodactyl of the same mass", correct = TRUE),
+    answer("From looking at the graph, it doesn't appear that longevity increases with mass in the Chiroptera, but it does in all the other orders shown", correct = TRUE),
+    answer("Some bats live for as long as other mammals that are 10000 times their mass", correct = TRUE),
+    answer("The longest lived bat lives for longer than the longest lived rodent", correct = TRUE),
+    answer("The heaviest bat weighs about 300g"),
+    answer("The Carnivora and the Artiodactyla tend to cluster together in terms of both mass and longevity, although the smaller carnivores are lighter than the smaller artiodactyls", correct = TRUE),
+    answer("The longest lived species in this dataset is a primate")
+  )
+)
+```
+</details>
+
+ <br><br><br>
+
+^1^ Healy, K., Guillerme, T., Finlay, S., Kane, A., Kelly, S.B.A., McClean, D., Kelly, D.J., Donohue, I., Jackson, A.L. & Cooper, N. (2014) Ecology and mode-of-life explain lifespan variation in birds and mammals. Proceedings, Biological sciences, 281, 20140298.
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

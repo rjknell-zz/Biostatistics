@@ -1,0 +1,599 @@
+---
+title: "Linear models 1: Single-factor ANOVA"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Analysis of variance explained: how to partition variance and why this is so useful for telling us about differences between means.
+---
+
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gplots)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
+
+load("ragwort.rda")
+
+ragwort$inoculum <- as.factor(ragwort$inoculum)
+
+```
+
+
+
+## Linear models introduction
+
+This set of tutorials will teach you about one of the most important statistical methods there is, the linear model (also known as the general linear model). Linear modelling is a hugely flexible and powerful way of investigating and describing the important patterns within a dataset, and can easily cope with complex experimental designs. In this first tutorial we'll look at one of the simplest applications of linear modelling, specifically the analysis where there is a single explanatory variable which is a factor with two or more levels. This analysis is commonly referred to as an ANOVA (or more precisely a single-factor ANOVA) but it is also a subset of the analyses possible in the overall general linear model. All the principles we'll see here apply to other linear modelling situations so it's worth spending some time getting to grips with this simple example.
+
+## Fitting an ANOVA
+
+### Introducing the data
+
+The data we're going to be analysing come from a paper by Minggang Wang and coauthors published in the *New Phytologist* in 2018^1^. Wang *et al.* were studying the phenomenon of *plant-soil feedback* (PSF) whereby aspects of plant biology are affected by the presence of other plants in the soil before the one in question. The study organism in this case is ragwort, *Jacobea vulgaris*, an important and toxic weed in arable fields in Europe and is also highly invasive in other parts of the world. Ragwort is known to be strongly affected by PSF with plants grown in soil that has previously had plants of the same species growing in it exhibiting severely reduced growth.
+
+
+![](images/ragwort.jpeg){width="400"}
+
+
+A ragwort plant *Jacobea vulgaris*. Photo R. Knell 2020.
+
+As part of a much larger and more wide-ranging study of the effects of PSY on ragwort, Wang *et al.* investigated the effect of soil organisms of different sizes on this PSF effect. To do this they grew individual ragwort plants in soil that was inoculated with water that had been mixed with "conditioned" soil from a pot which a ragwort plant had previously grown in. Before being added to the soil for the new plants, the water was passed through filters of either 1000, 20, 5 or 0.5 µm mesh size. The first of these would exclude soil animals over 1mm in size, the 20 µm filter would remove most of the very small animals that live in soil such as nematodes and collembola, the 5 µm mesh would exclude most fungi and the 0.2 µm mesh would filter out most bacteria. Each pot had a single seedling grown in it for 5 weeks after which they were harvested and a variety of measurements taken including the root biomass. The data are already loaded as a data frame called `ragwort`. 
+
+### Initial exploratory analysis
+
+Let's have a look, starting with a look at the overall structure of the data frame.
+
+```{r}
+str(ragwort)
+```
+
+In this data frame we have one factor, `inoculum`, with four levels, and two continuous variables, `root_mass` and `leaf_mass` which are hopefully self-explanatory. How much replication is there?
+
+```{r}
+table(ragwort$inoculum)
+```
+
+Nost treatments have 10 replicates. The 0.2µm one only has seven and this is explained in the paper because the preparation of these samples was very time consuming. There are 18 replicates of the 5µm treatment and it's not clear why this is. Examining the data doesn't reveal any obvious problems however, and there's nothing to indicate that some of the rows have been accidentally duplicated, so we'll not worry about this further.
+
+Let's visualise the root mass data using a boxplot.
+
+```{r fig.cap = "**Figure 1** Boxplot showing root mass data for each treatment level"}
+
+# Change the order of the levels in inoculum so that they make sense
+# ragwort$inoculum <- factor(ragwort$inoculum, levels = c("Sterile", "Whole_soil", "1000um", "20um", "5um", "0.2um"))
+  
+# Plot a boxplot             
+boxplot(root_mass ~ inoculum,
+        xlab = "Treatment",
+        ylab = "Root mass (g)",
+        data = ragwort,
+        col = "aquamarine4")
+```
+
+Looking at these boxplots, we can be happy that the data are probably reasonably well-behaved. There are no obvious outliers and the boxplots are sufficiently symmetrical that we don't need to worry about excess amounts of skew in the distribution of these data. 
+
+When we come to think about the differences between groups, however, it's hard to say much with certainty: the 1000µm treatment has the lowest median and the 5µm treatment the highest, but there's a lot of overlap between them when we look at the interquartile ranges, and overall it's hard to say anything with much confidence about effects of the different filter sizes on root mass. A statistical test of the differences between the means would be helpful. We could use a t-test to compare each mean with each other mean, but that would give us a total of 6 tests and, because of the large number of tests, an overall type 1 error rate of 0.26, or 26%. This would mean that we would be quite likely to find at least one significant effect that was in fact simply a consequence of sampling error. What we are going to do instead is use an analysis called ANalysis Of VAriance, or ANOVA. Rather than comparing means, this relies on something called *partitioning variance* to detect whether there are differences between means. 
+
+<br><br><hr>
+1 Wang, M., Ruan, W., Kostenko, O., Carvalho, S., Hannula, S.E., Mulder, P.P.J., Bu, F., van der Putten, W.H. & Bezemer, T.M. (2019) Removal of soil biota alters soil feedback effects on plant growth and defense chemistry. The New phytologist, 221, 1478–1491.
+
+
+
+## Partitioning variance
+
+This video explains what is meant by partitioning variance:
+
+![](https://youtu.be/qh66ScABeM0)
+
+## Generating an ANOVA table
+
+Just partitioning variance doesn't answer any questions about these data --- we want to know if there is a significant difference between our means. To do this we need to take our partitioned data and use it to carry out an ANalysis Of VAriance.
+<br>
+![](https://youtu.be/9xyve87BJjk)
+<br>
+
+### ANOVA tables in R
+
+In the video you saw how to calculate the total, error and treatment sums of squares from first principles and how to put those together in an ANOVA table. In R there are two functions that will do this for you, one is `aov()` and the other is `lm()`. `lm()` stands for linear model and refers to the fact that the analysis we're looking at here is in fact one component of the larger family of analyses which are collectively referred to as linear models. `aov()` is very similar to `lm()` but gives its output in a slightly different way. We'll just use `lm()` here because we'll be going on to use it much more with a variety of different analyses.
+
+The way we ask `lm()` to calculate an ANOVA on data like this with a single factor as the *explanatory variable* is to use a formula with `response variable ~ explanatory variable`: so we have the response variable, in this case `root_mass`, then a *tilde* `~` which means something like "as explained by" in R formulas, and then the explanatory variable, in this case `inoculum`. We'll have to tell R to use the `ragwort` dataset as well with an argument stating `data = ragwort`. So to do our ANOVA we'll use the code `lm(root_mass ~ inoculum, data = ragwort)`. When we do this we want to save the *fitted model* (remember, what we are doing here is a straightforward linear model) to an object so that we can access the outputs in a variety of ways. Let's start by fitting the model and then just looking at the ANOVA table, which we do with the `anova()` function.
+
+```{r}
+# Calculate ANOVA and save fitted model to object R1
+R1 <- lm(root_mass ~ inoculum, data = ragwort)
+
+# Generate ANOVA table
+print(anova(R1))
+```
+
+This gives us a standard ANOVA table. There isn't a row for the total sum of squares but this is not informative anyway, and the error sum of squares is titled `Residuals`, but the rest is the standard layout. The mean square values are the sums of squares divided by the appropriate df., the F-statistic is the treatment mean squares (0.0283) divided by the error mean squares (0.00444) and the p-value is the probability of observing an F-value of 6.38 or greater on an F-distribution with 3 and 41 degrees of freedom. Our p-value is a  small number and well below 0.05 so we conclude that on the basis of this ANOVA we have at least one mean which is significantly different from at least one other mean.
+
+
+
+
+## Exercise: Exploratory analysis of the leaf mass data with
+
+
+As we saw earlier there is a third variable in the `ragwort` data frame, namely `leaf_mass`. This gives the leaf mass (surprise!) in grams for the same plants that we have fitted an ANOVA to the root masses of. Before any analysis it's important to plot out the data and check for any anomalies, look for evidence of weird or problematic distributions and so on. As we did with the root mass data, this can be done in this case by plotting a boxplot of `leaf_mass` against `inoculum`. Have a go at doing this and remember to label your axes.
+
+```{r boxplot, exercise = TRUE, exercise.cap = "Boxplot", exercise.lines = 6}
+
+```
+
+```{r boxplot-hint-1}
+# You can use the code from the root mass boxplot above
+# Just remember to change the variable names and the axis labels
+# Where necessary
+```
+
+```{r boxplot-hint-2}
+# For the formula just replace root_mass with leaf_mass
+# For the axis labels just change the y-axis label
+```
+
+```{r boxplot-hint-3}
+# This is the solution:
+boxplot(leaf_mass ~ inoculum,
+        xlab = "Treatment",
+        ylab = "Leaf mass (g)",
+        data = ragwort,
+        col = "aquamarine4")
+```
+
+Have a look at the boxplot, think about the patterns you can see and try to answer the following questions. There is a pull-down section below with some discussion of the patterns and the questions. You might like to revise the tutorial on using boxplots in exploratory data analysis if this is difficult or unfamiliar.
+
+```{r boxplot-quiz, echo=FALSE}
+quiz(
+  caption = "Boxplot questions",
+  question(
+    "Is there an overall pattern in these data?",
+    answer("No"),
+    answer(
+      "As the filter size increases the leaf mass tends to decrease",
+      correct = TRUE
+    ),
+    answer(
+      "There is a suggestion of a positive correlation between filter size and leaf mass"
+    ),
+    answer(
+      "Because the inter-quartile ranges are so large it is difficult to say"
+    )
+  ),
+  question(
+    "What can we say about the shape of the data distributions?",
+    answer("There is obvious positive skew"),
+    answer("It is not clear but there is some indication of negative skew"),
+    answer("It's not possible to say because the sample size is too small"),
+    answer(
+      "The boxplots are roughly symmetrical indicating no major problems with the data distribution",
+      correct = TRUE
+    )
+  ),
+  question(
+    "What can we say about the variance of our samples?",
+    answer(
+      "There is some variability between treatments but overall nothing to suggest a serious problem with heteroskedasticity",
+      correct = TRUE
+    ),
+    answer("The variance is clearly declining as the median values increase"),
+    answer("It's not possible to say because the sample size is too small"),
+    answer(
+      "The clear heteroskedasticity is likely to cause problems with our analysis"
+    )
+  ),
+  question(
+    "Are there any outliers which are obviously anomalous?",
+    answer(
+      "Yes, the boxplot shows three outliers which should be deleted before further analysis"
+    ),
+    answer(
+      "The outliers indicated on the boxplot are not particularly extreme values and are unlikely to be true outliers, rather this is what we might expect to see in a dataset of this nature",
+      correct = TRUE
+    ),
+    answer("It's not possible to say because the sample size is too small"),
+    answer(
+      "The outlier indicated for the 5µm treatment is clearly a value which we should be very concerned about and is likely to reflect an error in recording or similar"
+    )
+  )
+)
+```
+
+<details><summary>**Click here for more on the boxplots and the questions**</summary>
+
+One reason to look at this boxplot is to get an idea of what the general patterns in the data are. Here we can see that  there is a general tendency for the leaf mass values to increase with smaller filter sizes, so the 1000µm treatment has the lowest median value and the 0.2µm one the highest. 
+
+Another reason to look at this boxplot is to get an idea of the shape of the data and the amount of variablity. As with most parametric analyses we are assuming that our data are approximately normally distributed and that the variance is not changing a lot as the values increase or decrease. In terms of the shape of the data distributions, there is little to indicate a problem: yes some of the boxplots are not perfectly symmetrical but there is no systematic pattern and certainly nothing to indicate (for example) strong positive skew. The patterns in the variance between groups do hint at possible differences but there's no consistent pattern associated with, for example, the median value, and although the IQR is large on, for example, the 1000µm boxplot the whiskers are short (compare with the 5µm whiskers) so this is probably not something to worry about.
+
+Boxlots also allow us to check whether there are any data values which are clearly anomalous and which we might need to consider removing before analysis. The 'outliers' indicated here are not different enough from the rest of the values to cause any worries and there's no reason to take a second look at them or consider removing them before analysis. If we had an outlier which had a value that was very unlikely (e.g. a single value of 5.5g when all the rest are less than 0.7g) or impossible (e.g. a negative value) then things would be different.
+</details>
+
+## Exercise: Fitting the ANOVA to the leaf mass data
+
+Now fit an ANOVA to your data, save the fitted object as `L1` and generate the ANOVA table. The code we used before for the root mass ANOVA has been pasted in and you just have to change it
+
+```{r ANOVA, exercise = TRUE, exercise.cap = "ANOVA", exercise.lines = 6}
+# Calculate ANOVA and save fitted model to object R1
+R1 <- lm(root_mass ~ inoculum, data = ragwort)
+
+# Generate ANOVA table
+anova(R1)
+```
+
+```{r ANOVA-hint-1}
+# Change the name of the object (R1)
+# Change the response variable in the formula to root_mass
+```
+
+```{r ANOVA-hint-2}
+# The line fitting the ANOVA should read:
+L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
+```
+
+```{r ANOVA-hint-3}
+# The line generating the ANOVA table should read
+anova(L1)
+```
+
+Take a look at the ANOVA table and try to answer these questions.
+
+```{r ANOVA-quiz, echo = FALSE}
+quiz(
+  caption = "ANOVA questions",
+  question(
+    "What does the reported p-value for this ANOVA tell us?",
+    answer("p < 0.05 so there is no significant difference between the means"),
+    answer(
+      "p is much less than 0.05 so all the means are significantly different from each other"
+    ),
+    answer(
+      "P < 0.05 so we conclude that filter size and leaf mass are significantly correlated"
+    ),
+    answer(
+      "p < 0.05 indicating that at least one mean is significantly different from at least one other", correct = TRUE
+    )
+  ),
+   question(
+    "How is the F-statistic calculated in the ANOVA table?",
+    answer(
+      "Mean Square inoculum / mean square residuals", correct = TRUE
+    ),
+    answer(
+      "Df Residuals / Df inoculum"
+    ),
+    answer("Sum sq inoculum / Mean sq inoculum"),
+    answer(
+      "Difference between means divided by the standard error of the differences"
+    )
+  )
+)
+```
+
+<details><summary>**Click here for more on the ANOVA table**</summary>
+
+The F-statistic is the test statistic for our ANOVA and is calculated by dividing the MS treatment (in this case inoculum) by the MS error (what R calls Residuals). If the null hypothesis were true we would expect this ratio, on average, to be 1. For our F-test we compare the calculated F-statistic with an F-distribution on (in this case) 3 and 41 degrees of freedom to find out the probability of generating a value as big as, or bigger than, 24.97 if the null hypothesis were actually true. Here, that probability is a very small number and considerably below the p=0.05 cut off for statistical significance, so we cautiously conclude that this pattern is unlikely to be a consequence of random sampling.
+
+Because in ANOVA we are not comparing means directly, but are partitioning the variance into that epxlained by our treatment (MS inoculum) and that which we can't explain (MS error or MS residuals), our significant result tells us nothing about which means are different from which other means. All we can tell is that at least one mean is significantly different from at least one other mean. The next section tells us how to get more detail on where the differences really lie.
+</details>
+
+## Interpreting ANOVA output
+
+### Post-hoc testing
+
+The statistically significant ANOVA tells us that at least one mean value in our root mass data is significantly different from at least one other mean value, but it doesn't tell us any more: we can't say, for example, whether the mean value for the 1000µm treatment is significantly different from the mean value for the 0.2µm treatment. 
+
+To gain some further insight we have two options. Firstly, we can use a *post-hoc test*. These are statistical tests which are designed to compensate for the enhanced probability of a *type 1 error* (a false positive) that arises when doing multiple tests. Because of this compensation they tend to be *conservative* --- they have a higher *type 2 error rate* than we would like (a type 2 error is when we fail to detect an effect when one is really there: a false negative) . In other words, post-hoc tests have a higher probability of failing to detect an effect when they should do so than we would normally reagrd as acceptable, so they are usually only used once statistical significance has been established via an ANOVA or similar. The most common post-hoc test that you'll see used is the Tukey HSD test. This will calculate the difference between means for all six possible pairwise comparisons and give us 95% confidence intervals and a p-value for each of these differences. The `TukeyHSD()` function doesn't work on ANOVA objects fitted with `lm()` but it does on ones fitted with `aov()` so our function call is a little more obscure than we might like.
+
+```{r}
+TukeyHSD(aov(R1))
+```
+
+Looking at this you can see that the 95% confidence intervals for the estimated differences between means overlap zero in all cases aside from the last two, and this is backed up by the two p-values for these comparisons being less than 0.05. On the basis of this we can conclude that the significant differences in this case are between the mean root mass for the 5µm treatment and the mean root masses for the 1000µm and 20µm treatments. 
+
+Let's plot the means and their 95% confidence intervals (for clarity, we are now talking about the confidence intervals for the means themselves, not for the differences between means which are what we get from the Tukey test) and have a look at them. We'll use the`plotmeans()` function from the gplots package.
+
+```{r warning = FALSE, fig.cap = "**Figure 2** Mean and 95% confidence intervals for root mass data at each level of inoculum"}
+# Load package gplots
+library(gplots)
+
+# Draw the plot
+plotmeans(ragwort$root_mass ~ ragwort$inoculum,
+          connect = FALSE, # No lines connecting points
+          barcol = "aquamarine4",
+          col = "aquamarine4",
+          pch = 16, 
+          cex = 1.2, 
+          n.label = FALSE, # No sample size labels
+          xlab = "Inoculum",
+          ylab = "Mean root mass (g)"
+          )
+
+```
+
+This is consistent with what the Tukey test is telling us: you can see that means for the 1000 and 20µm treatment are close to each other and that the 95% CIs for each extend further than the mean for the other, indicating that we have little confidence that the small difference we see between these two means has arisen from anything aside from sampling error. The mean root mass for the 5µm treatment,which the Tukey test indicated is significantly different from the 1000 and 20µm treatments is quite a lot higher than the other two and importantly the 95% CIs for this mean and the other two don't overlap. Finally, the 0.2µm treatment mean is intermediate between the two low values for the large mesh sizes and the high value for the 5µm treatment, but the 95% CIs are rather large, with a lot of overlap with all the other treatments. You might recall that this treatment has a lower sample size than the others becuase of the difficulty of filtering enough inoculum through such a fine filter, and consequently the 95% CIs are larger than for the other treatments and we have less confidence in our estimate of the mean root mass for these plants.
+
+### Using the estimated model coefficients
+
+The second option for interpreting a significant ANOVA is perhaps a little less satisfying if you want to have rigid rules about where the differences lie, but it also has some advantages over the post-hoc test we looked at above. This involves looking at the differences between means as estimated in the process of fitting the ANOVA --- the *model coefficients*. These, and some other information can be viewed by using the `summary()` function on our `R1` object. The output you get from R when you do this is not intuitively easy but is hopefully explained in the following video. The video deals with some more complex cases as well but for the moment ignore these: just watch the first 11 minutes.
+
+![](https://youtu.be/CS5ogBL-MHo)
+
+
+```{r}
+summary(R1)
+```
+
+Looking at the coefficients table we can see that the estimate for the first row, labelled `intercept` is 0.328. This is in fact the estimated mean for the first level of the factor, which in this case is the 0.2µm treatment --- so this is the mean root mass for the plants grown in soil filtered through the 0.2µm mesh. We can check this by calculating the mean ourselves:
+
+```{r}
+mean(ragwort$root_mass[ragwort$inoculum == "0.2µm"])
+```
+
+R gives us a standard error for this estimate, a t-value and a marginal p-value but this is not especially informative here since all it's doing is telling us that the mean root mass for plants grown in sterile soil is significantly different from zero.
+
+This is the next line:
+
+```{r echo = FALSE}
+summary(R1)$coefficients[2,,drop = FALSE]
+```
+
+
+
+This time we have the name of our factor (inoculum) and also the name of the factor level in question (1000µm). The value for the estimate is -0.0782. This is not the estimated mean now, but the estimated difference between the mean for the 0.2µm treatment and the mean for the 1000µm treatment. We can check that as well:
+
+```{r}
+
+# Sterile soil mean minus the estimated difference
+mean(ragwort$root_mass[ragwort$inoculum == "0.2µm"]) - 0.0782
+
+# Mean for whole soil
+mean(ragwort$root_mass[ragwort$inoculum == "1000µm"])
+```
+
+
+You can see that the two values are the same. The standard error in the coefficients table for this row is now the standard error for the *difference* between the two means. R calculates a t-value and the marginal p-value and this is 0.0219. Interestingly this is less than 0.05 and now we have an indication that the difference between the 0.2µm mean root mass and the 1000µm mean root mass are significantly different. This is at odds with the results from the Tukey test which gave us a p-value of 0.0966 for this comparison.
+
+Moving onto the third line of the coefficients:
+
+```{r echo = FALSE}
+summary(R1)$coefficients[3,,drop = FALSE]
+```
+
+this is now telling us the difference between the estimated mean for the treatment with water filtered through a 20µm mesh and the 0.2µm filtered treatment. This time the relatively large standard error for this difference and the associated p-value suggest that there is not a significant difference between the mean root mass for the 0.2µm treatment and that for the 20µm treatment. This at least is consistent with our Tukey test result which gave us a p-value for this comparison of 0.426. The final row of the coefficients table is for the 5µm treatment compared with the 0.2µm treatment and again this gives us a non-significant comparison which is again consistent with the results from our Tukey test.
+
+All in all, however, the set of contrasts that we have from just using the default table given by `summary()` is not giving us the information we really need to interpret the patterns of differences and similarities in these means as we would like to. There's no indication of whether the 5µm treatment mean is significantly different from the 1000µm mean, for example. Rather than just relying on the default settings, we can ask for a different set of contrasts. One way to do this is to refit the model but with a different factor level specified as the intercept. In this case the 1000µm filtered treatment would be an appropriate choice --- we would then get a set of contrasts allowing us to compare the other means with this one which makes a bit more sense. The `relevel()` function allows us to do this. 
+
+```{r}
+# Change reference level
+ragwort$inoculum <- relevel(ragwort$inoculum, ref = "1000µm")
+
+# Fit new model
+R2 <- lm(root_mass ~ inoculum, data = ragwort)
+
+# Ask for the summary table
+summary(R2)
+```
+
+```{r echo = FALSE}
+ragwort$inoculum <- relevel(ragwort$inoculum, ref = "0.2µm")
+```
+
+
+All of the details of this ANOVA are the same for both R1 and R2, the only difference is that the coefficients table is calculated with the 1000µm treatment as the intercept. All of the other filtered treatments have means which are higher than the 1000µm treatment, so the estimated coefficients are all positive numbers. Two of these (5µm and 0.2µm) are sufficiently different from the 1000µm treatment and have small enough standard errors that these differences are significantly different from zero on the marginal t-test provided. The p-value for the 0.2µm treatment is the same as we saw earlier with the default option for the intercept and is rather closer to 0.05 than that for the 5µm treatment, meaning that we have rather less confidence in this particular effect. Consistent with the Tukey test, the 20µm treatment does not appear to be significantly different from the 1000µm treatment.
+
+On the basis of this approach to understanding the differences between oour means, and focusing on the results when we have the 1000µm treatment specified for our intercept, we would conclude that the mean root mass for both the 0.2 and the 5 µm treatment is significantly higher than that for the 1000µm treatments, whereas that for the 20µm treatment is not. This approach doesn't give us explicit tests for the other differences, such as those between the 0.2 and the 5µm means, but we can look at our graph of means and confidence intervals (figure 2) and conclude that given the similarity of the means and the strong overlap of the 95% confidence intervals we can have little confidence that there is a significant difference between the 0.2 and 5µm treatment means, or those for the the 0.2 and 20µm treatments.
+
+This example, using the *treatment contrasts* from the coefficients table, is an example of using *contrasts* to assess *planned comparisons* in our data: on the basis of our prior knowledge of the system and guided by the aims of our experiment we might decide before we analyse the results that the contrasts with the 1000µm treatment are what we are really interested in and focus on those as we have done here. If we were really interested in a different set of contrasts that couldn't be addressed by setting one factor level as the intercept then it is actually possible to specify our own choice of contrasts so long as there are fewer contrasts in total than there arefactor levels. How to do this is something of an advanced subject and we won't address it here but the process is described in a number of textbooks including Field *et al.* (2012)^2^, Logan (2011)^3^ and Faraway (2014)^4^
+
+### Post-hoc tests or contrasts?
+
+Post-hoc tests are widely used to help interpret ANOVA results but there are a number of good reasons to be cautious about using them. These include the generally conservative nature of post-hoc tests which gives a higher probability of a *type 2 error* (a false negative) than we would like, the related possibility that you can get a significant ANOVA but no significant differences on a post-hoc test and also the fact that such tests are not available for more complex linear models so we can really only use the estimated coefficients. The problem with conservatism can be seen here: the contrast between the 1000 and 0.2µm treatments was found to be non-significant by the Tukey test but the treatment contrasts, which are less prone to type 2 errors, found the opposite. As the number of factor levels, and therefore the number of comparisons from the post-hoc test, increases this problem becomes worse. The flip side of this, of course, is that relying on contrasts as we did in the second part of this doesn't give you as much information and we aren't able to compare every mean with every other mean.
+
+The decision as to whether to use a psot-hoc test or to use contrasts really depends on the answers to several questions:
+
+* Based on your prior knowledge of the system and the aims of your experiment, do you need to make comparisons between every treatment mean and every other treatment mean, or are there specific comparisons which will give you the information you need? If the former, use a post-hoc test, if the latter use contrasts.
+
+* Is it important for you to know the significance and effect size of some of the comparisons between means as accurately as possible? If so use contrasts.
+
+Overall, biologists are often lazy and just throw a post-hoc test at an ANOVA result without really thinking about what it is that they're trying to find out (see Ruxton and Beauchamp 2008[^6] for some commentary on this). This is not best practice and much of the time we would be better served by using contrasts, either the treatment contrasts that R gives us by default or somethign more sophisticated. It's better to think about what you're trying to acheive with your analysis and what the important predictions you want to test are and to focus on them than to just dump everything into a post-hoc test without really getting to grips with what the important tests arising from your experiment are. This doesn't mean that you should never use a post-hoc test of course, just that you should think about how you're going to proceed if you get a significant result *before* you do your ANOVA, not afterwards.
+
+2 Field, A., Miles, J. & Field, Z. (2012) Discovering Statistics Using R, 1st edition. SAGE Publications Ltd.  
+3 Logan, M. (2011) Biostatistical Design and Analysis Using R: A Practical Guide, 1st edition. Wiley-Blackwell.  
+4 Faraway, J.J. (2014) Linear Models with R (Chapman & Hall/CRC Texts in Statistical Science), 2nd edition. Chapman and Hall/CRC.  
+5 Ruxton, G.D. & Beauchamp, G. (2008) Time for some a priori thinking about post hoc testing. Behavioral Ecology 19, 690–693.  
+
+## Exercise: interpreting the leaf mass ANOVA
+
+YOu've already fitted an ANOVA to the leaf mass data and the object is saved as L1. The ANOVA gave a signficant p-value so now we want to know where the differences between the means lie. You'll use both a post-hoc test and also look at the results via the treatment contrasts in the coefficients table. Let's start by carrying out a Tukey's HSD test on our fitted model. This is the code we used before for the root model: try to modify it for the leaf mass model
+
+```{r prepare-anova, echo = FALSE}
+L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
+```
+
+
+
+```{r tukey, exercise = TRUE, exercise.cap = "Tukey test", exercise.lines = 3, exercise.setup = "prepare-anova" }
+TukeyHSD(aov(R1))
+```
+
+```{r tukey-hint-1}
+# Just replace the R1 object with the 
+# name of the leaf mass model
+```
+
+```{r tukey-hint-2}
+# This is the solution:
+TukeyHSD(aov(L1))
+```
+Have a look at the output from this and have a go at this quiz.
+
+```{r tukey-quiz, echo=FALSE}
+quiz(
+  caption = "Tukey HSD questions",
+  question(
+    "Which of the following statements are true? More than one answer can be correct.",
+    answer("All of the means are different from all of the other means"),
+    answer(
+      "On average, the mean leaf mass for the 1000µm filter treatment is 0.191g less than that for the 5µm treatment",
+      correct = TRUE
+    ),
+    answer(
+      "The 5µm treatment mean is significantly different from the 1000µm and 20µm means, but not from the 0.2µm mean",
+      correct = TRUE
+    ),
+    answer(
+      "The 95% confidence intervals for the difference between the 20 and 0.02µm treatments are from -0.123 to -0.207"
+    ),
+    answer(
+      "The biggest difference between means is between the 1000 and 0.2µm treatments",
+      correct = TRUE
+    ),
+    
+    answer(
+      "The smallest p-value is for the difference between the 1000 and 0.2µm treatments"
+    ),
+    answer(
+      "All of the comparisons between means are significant except for the comparison between the 0.2 and 5µm treatment means",
+      correct = TRUE
+    )
+  )
+)
+```
+
+Now let's draw a plot of the means and confidence intervals and see how this corresponds to the differences we've seen from our Tukey HSD test. Here's the code we used for the root mass data, see if you can convert it to show your leaf mass data.
+
+```{r CI_plot, exercise = TRUE, exercise.cap = "Plotting CIs and means", exercise.lines = 15}
+# Load package gplots
+library(gplots)
+
+# Draw the plot
+plotmeans(ragwort$root_mass ~ ragwort$inoculum,
+          connect = FALSE, # No lines connecting points
+          barcol = "aquamarine4",
+          col = "aquamarine4",
+          pch = 16, 
+          cex = 1.2, 
+          n.label = FALSE, # No sample size labels
+          xlab = "Inoculum",
+          ylab = "Mean root mass (g)"
+          )
+```
+
+
+```{r CI_plot-hint-1}
+# This is actually really easy:
+# Just replace the variable for root mass
+# in the plot formula with the one for leaf mass
+# and change the y-axis label
+
+# You don't need to refer to the ANOVA
+# at all
+```
+
+```{r CI_plot-hint-2}
+# This is the solution
+# Load package gplots
+library(gplots)
+
+# Draw the plot
+plotmeans(ragwort$leaf_mass ~ ragwort$inoculum,
+          connect = FALSE, # No lines connecting points
+          barcol = "aquamarine4",
+          col = "aquamarine4",
+          pch = 16, 
+          cex = 1.2, 
+          n.label = FALSE, # No sample size labels
+          xlab = "Inoculum",
+          ylab = "Mean leaf mass (g)"
+          )
+```
+
+Have a look at this and have a go at these questions
+
+```{r CIs-plot-quiz, echo=FALSE}
+quiz(
+  caption = "Means and CIs plot questions",
+  question(
+    "For the Tukey test output some of the 95% CIS are negative, but these are all positive. Why?",
+    answer("These are 95% CIs for the means, the Tukey test table gives the 95% CIs for the differences between the means", correct = TRUE),
+    answer(
+      "The Tukey test logs all the values so low positive values can be transformed to negative ones"),
+    answer(
+      "This is because the means are almost all different from each other"),
+    answer(
+      "The 95% confidence intervals from the Tukey test need to be multiplied by the approriate value of t to generate these values")
+    ),
+  
+  question(
+    "Which of these statements are true? More than one answer can be correct.",
+    answer("Because the 95% CIs for the 1000 and the 20µm means do not overlap with any other CIs we would expect these means to be different from all the other means", correct = TRUE),
+    answer("We have the most confidence in the location of the 20µm mean", correct = TRUE),
+        answer("The differences between means and the patterns of overlap between the confidence intervals we see in this plot is what we would expect given the results of the Tukey test", correct = TRUE),
+    answer("The amount of overlap between the 0.2µm mean and the 0.5µm mean is a consequence of the small sample size for the 0.2µm treatment"),
+    answer("Because the 95% CIs for 1000µm do not overlap zero we conclude that this mean is not signficant")
+  )
+)
+```
+
+
+Now we're going to contrast what we've found out from the Tukey test with what we might get from looking at the coefficients table. This is not something you'd do normally because you would do one or the other, but it is a useful exercise. The first thing to think about is whether we want to want to use the default intercept for our treatment contrasts. In the root mass example we used the 1000µm treatment as the intercept; this made sense because this had the lowest value and is perhaps the treatment that we would expect to have the lowest value for leaf mass. This time, though we're going to use the default option, which is the 0.2µm treatment. This is because we've already looked at our means and 95% CIs and we're pretty confident in the differences between the 1000µm treatment and the other means, but we are not so sure about the 0.2µm treatment. This might be regarded by purists as a little too post-hoc for their liking but we'll do it anyway.
+
+The leaf mass model is, in case you've forgotten, called `L1`. See if you can generate the summary table which includes the estimated coefficients.
+
+```{r summary, exercise = TRUE, exercise.cap = "Generating the summary table", exercise.lines = 3, , exercise.setup = "prepare-anova"}
+
+
+```
+
+
+```{r summary-hint-1}
+# This is easy. You just need to use the summary()
+# function with the L1 object as an argument
+```
+
+```{r summary-hint-2}
+# This is the solution
+summary(L1)
+```
+
+Have a look at this and try to complete the quiz.
+
+```{r summary-quiz, echo=FALSE}
+quiz(
+  caption = "Treatment contrasts questions",
+  question(
+    "What does the value of 0.44073 in the first row of the Estimate column represent?",
+    answer("The estimated mean value for all the data points together"),
+    answer(
+      "The 95% confidence interval for the 0.2µm treatment"),
+    answer(
+      "The difference betwen the mean for the 0.2 µm treatment and all other means"),
+    answer(
+      "The mean value for the 0.2µm treatment", correct = TRUE)
+    ),
+  
+  question(
+    "What does the value of -0.12293 in the third row of the Estimate column represent?",
+    answer("The difference between the mean for the 20µm treatment and the mean for the 0.2µm treatment", correct = TRUE),
+    answer("The upper 95% Confidence interval for the 20µm treatment"),
+    answer("The difference between the mean for the 1000µm treatment and the mean for the 20µm treatment"),
+    answer("The difference between the mean for the 20µm treatment and all the other means together")
+  ),
+    
+    question(
+      "Which of the following is true?  More than one answer can be correct.",
+      answer("The treatment contrasts show that the mean for the 20µm treatment is significantly different from the means of all other treatments"),
+      answer("The treatment contrasts show that the mean for the 5µm treatment is not significantly different from the mean for the 0.2µm treattment", correct = TRUE),
+      answer("The conclusions from the treatment contrasts are consistent with those for the Tukey test", correct = TRUE),
+      answer("Just from looking at the treatment contrasts we can tell that the estimated mean for the 1000µm treatment has the lowest value", correct = TRUE)
+    )
+  )
+```
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

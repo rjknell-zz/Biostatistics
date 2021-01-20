@@ -1,0 +1,421 @@
+---
+title: "Descriptive and Exploratory Statistics 3: Boxplots"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+    Boxplots are an important tool for visualising data, 
+    especially when there are multiple variables or groups wthin a 
+    variable. Learn how to draw them in R and how to interpret them.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+# worldbank <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv")
+
+load("worldbank.rda")
+
+
+
+worldbank$Region <- as.factor(worldbank$Region)
+```
+
+
+## What is a boxplot?
+
+A boxplot is a way of visualising data which displays a lot of information while still being simple and easy to interpret. They are particularly useful when there you have multiple variables or different factor levels associated with a numeric variable and you want to compare them. You can watch a video explaining the basics here:
+
+![](https://youtu.be/lL4XhpzbWA0)
+
+
+Just to recap the video content, let's look at the data on population growth from the `worldbank` dataset, a set of data on 186 countries from 2014 which I compiled from data published by the World Bank. The dataset is already loaded and We'll start by looking at a frequency histogram.
+
+```{r fig.cap = "Frequency histogram of annual percentage population growth for 186 countries", fig.height = 6}
+
+hist(worldbank$Population_growth, #Specify the variable
+     main = "", #No main title
+     col = "aquamarine4", #Set the fill colour
+     xlab = "Annual population growth per country (%)") #X axis label
+```
+
+
+You can see that this variable is roughly normally distributed, with a central tendency somewhere between 1 & 2 and a range from just below -4 to somewhere between 6 & 7. We can get more exact numbers using `summary()`
+
+```{r}
+summary(worldbank$Population_growth)
+```
+
+Rather than looking at a frequency histogram, we can use a boxplot to give us much the same information. The function to do this in R is conveniently called `boxplot()`. 
+
+```{r fig.cap = "Boxplot of annual population growth for 186 countries", fig.height = 6}
+boxplot(worldbank$Population_growth, #Specify the variable
+        col = "aquamarine4", #Set the colour
+        ylab = "Annual population growth per country (%)") #X axis label
+```
+If you've not seen one of these before it might be a bit confusing so let's go through all the different bits one at a time.
+
+1. There's a thick line in the middle, sometimes called the *hinge*. This indicates the *median*: the middle value when the data are ranked.
+2. There's a *box* around the thick line. This extends from the *First quartile* to the *Third quartile*: so this is showing you the range of values within which the middle 50% of all the datapoints lie. NB the width of the box has no meaning, at least for a normal boxplot. 
+3. There are dotted lines extending some distance above and below the box. These are called the *whiskers* and they extend wait for it from the quartile (so the end of the box) to the data point which is nearest to the last datapoint which is less than 1.5 times the *interquartile range* from the box. This might sound a little random but there is a good reason behind it: if the data are drawn from a normal distribution, roughly 99% (actually 99.3%) of all the data should fall within this range. NB you will sometimes see boxplots drawn with the whiskers extending up to the maximum and down to the minimum values. There's nothing especially wrong with doing this but it does reduce the amount of information in the graph.
+4.  Finally, any datapoints which lie outside the whiskers are plotted individually. These are usually called *outliers* but be careful with this word. Recall that we'd expect about 99% of the data to be within the whiskers if the data are from a normal distribution, so with 100 datapoints we should expect at to see one or more of these "outliers" most of the time. Here we have 186 datapoints and three "outliers" and that is entirely unsurprising. There's no reason to think that there is anything strange about these datapoints, and there is no reason to think that they are perhaps from a differently distributed set of data to the rest. It's better to think of them as *extreme values* rather than *outliers* because the latter is often used for datapoints that are somehow in the wrong dataset.
+
+Overall then a boxplot shows you the median, the interquartile range, the region within which roughly 99% of datapoints would be expected if the underlying distribution is normal, and any datapoints outside this region. To make this clearer, here is our frequency histogram again, this time with the boxplot plotted above it. The code is a little complex but I've put it here in case you're interested in how this figure was generated.
+
+```{r fig.height = 7, fig.width = 7, echo = TRUE}
+# Set plot area for histogram to the lower 70% of the total area
+par(fig = c(0, 1, 0, 0.7))
+
+# Plot the frequency histogram
+hist(
+  worldbank$Population_growth,
+  main = "",
+  xlab = "Population growth (%)",
+  breaks = 15,
+  col = "aquamarine4"
+)
+
+
+# set the plot area for the boxplot to the upper 60% of the total area
+par(fig = c(0, 1, 0.4, 1), new = TRUE)
+
+# Plot the boxplot
+boxplot(worldbank$Population_growth,
+        col = "aquamarine4",
+        bg = FALSE,
+        horizontal = TRUE,
+        axes = FALSE)
+```
+
+You can see how the median and the interquartile range indicated on the boxplot correspond to the centre of the distribution and the region with the bulk of the data present, and you can also see how the whiskers cover almost all of the range of the data, with the few extreme values showing up individually. 
+
+### Exercise: draw a boxplot of CO~2~ production by country
+
+There is a variable in the worldbank dataset called CO2 which is the annual CO~2~ production of each country in tonnes per capita. See if you can draw a boxplot of this variable and label the y-axis "Annual Carbon Dioxide Production Per Capita (t)". 
+
+```{r boxplot1, exercise = TRUE, fig.height = 6}
+
+```
+
+```{r boxplot1-hint-1}
+#Remember that you need to specify the worldbank 
+#dataframe and give the name of the CO2 variable 
+#with the two separated by a dollar symbol
+```
+
+```{r boxplot1-hint-2}
+#Use the ylab = argument to specify the y-axis label. 
+#The text for the label needs to be in quote marks.
+```
+
+```{r boxplot1-hint-3}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r boxplot1-hint-4}
+#This is the solution:
+boxplot(worldbank$CO2,
+ylab = "Annual Carbon Dioxide Production Per Capita (t)")
+```
+
+
+This boxplot looks very different to the one we drew in the last section. It looks as though it's been squashed towards the bottom and stretched towards the top, and all of the extreme values that are shown are relatively large values. To understand what we're seeing here, it will help to plot a frequency histogram for CO~2~ production. Don't forget to label the axes.
+
+```{r boxplot2, exercise = TRUE, fig.height = 6}
+
+```
+
+```{r boxplot2-hint-1}
+# You need to use the hist() function
+# The y-axis label should just be "Frequency"
+# The x-axis needs a label which says what it is
+# Remember that the text for axis labels goes in quote marks
+```
+
+```{r boxplot2-hint-2}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r boxplot2-hint-3}
+#This is the solution:
+hist(worldbank$CO2,
+xlab = "Annual Carbon Dioxide Production Per Capita (t)",
+ylab = "Frequency", 
+main = "")
+```
+
+Look at the boxplot and the frequency histogram and try to work out what's going on.
+
+<details><summary><b>Click here for explanation</b></summary>
+<br>
+You can see from looking at the frequency histogram that unlike the population growth data, per capita CO~2~ production is strongly positively skewed. This accounts for the different shapes of the two boxplots. The approximately normal distribution of the population growth data gives us a boxplot which is roughly symmetrical above and below the median, but the strong positive skew in the CO~2~ production data gives a very asymmetrical boxplot, with the lower whisker, quartile and the median being close together and the rest of the plot looking as though it's been stretched upwards. This shows us one of the great strengths of using boxplots as part of your initial exploration of your data: they don't just give you information on where the data are located, they tell you about the shape of the data as well.
+</details>
+
+### Basic boxplot quiz
+
+Here's a boxplot showing another variable from this dataset, this time `Forest_area` which gives the percentage of a nation's land area which is covered by forest.
+
+```{r fig.cap = "Boxplot of percentage forest area for 186 countries", fig.height = 6}
+boxplot(worldbank$Forest_area,
+        ylab = "Percentage forest cover")
+```
+
+```{r quiz, echo = FALSE}
+quiz(
+  question("Which of the following are true? More than one answer can be correct.",
+    answer("The median value for forest area is somewhere between 30 and 40", correct = TRUE),
+    answer("The interquartile range for forest area is between about 15 and about 75"),
+    answer("The frequency distribution for forest area probably has some positive skew", correct = TRUE),
+    answer("Forest area is bimodal"),
+    answer("The frequency distribution for forest area is normal")
+  ),
+  question("The boxplot shows no 'outliers'. Why might this be?",
+    answer("There are no anomalous data points"),
+    answer("Because of positive skew in the data the whiskers conceal them"),
+    answer("The data are percentages so there cannot be values greater than 100 or less than zero, and the whiskers extend almost to these limits", correct = TRUE),
+    answer("All the data were recorded correctly"),
+    answer("None of the data are more than three standard deviations from the mean")
+  )
+)
+```
+
+## Comparing groups with boxplots
+
+Boxplots can show you the shape and the location of your data, but so can frequency histograms. Why don't we just plot histograms? The answer to this is that boxplots become really useful when we have multiple groups of data that we want to compare. If you have a variable and also a factor which divides the data in your variable into groups, then `boxplot()` will allow you to visualise this. Instead of entering a single variable name you need to enter a *formula*, with the variable on the left and the factor name on the right, with a tilde between: `boxplot(variable ~ factor)`.
+
+As an example, here are some data on particulate pollution expressed as the average exposure to fine particles ([so called "PM~2.5~" particles](https://en.wikipedia.org/wiki/Particulates)) plotted with the different regions in our worldbank dataset shown separately. There are a few things that you might not be familiar with:
+
+`par(mar = c(12,5,2,2))` sets the margins for the plot, in the order bottom, left, top, right. I've made the bottom margin much bigger than usual because the region names are long and need plenty room. I've also added the `las = 2` argument in the `boxplot()` function call. This makes the text for the axis labels perpendicular to the axis, so the x-axis labels are vertical. Finally, the `\n` in the `ylab` argument is an "escape character" that introduces a new line in the text.
+
+```{r fig.cap = "Fine particulate exposure plotted for each region from the worldbank dataset", fig.height = 6}
+
+par(mar = c(12,5,2,2))
+
+boxplot(PM25 ~ Region,
+        data = worldbank,
+        ylab = "Fine particulates\n (micrograms per cubic metre)",
+        xlab = "",
+        las = 2)
+```
+
+Now you can see how a plot like this can convey a huge amount of information. You can:
+
+* Find out about the central tendencies of each group, so North America has the lowest median exposure and South Asia the highest. 
+* Make comparisons between groups regarding how much variability there is: so North America hs the lowest variability (but also only three countries), Latin America & the Caribbean has fairly low variability but the South Asia region has the most variability: some South Asian countries have exposure which is comparable to the lowest exposure in other parts of the world, but others have very high exposure. 
+* Use it to check the likely error distribution: here you can see that most of the boxplots are at least roughly symmetrical, so there's probably going to be no problem with using "standard" analysis techniques that assume normal errors.
+* Use it to check for potentially problematic datapoints --- there aren't any here that stand out as being obvioiusly problematic (i.e. impossible values of <0, values many times greater than all the others).
+
+### Exercise: draw a boxplot of CO~2~ production by Income Group
+
+The worldbank dataset also includes a variable called `Income_group` which splits the countries into four classes: Low income, Lower middle income, Upper middle income and High income. Let's generate a boxplot which compares the CO~2~ production data for these four groups. 
+
+Before we draw the boxplot we'll have to declare `Income_group` as a factor and just to make the graph make more sense we'll change the order of the factor levels: R orders factor levels alphabetically by default, but that would generate a plot that's not so easy to interpret. The following piece of code does this for us:
+
+```{r eval = FALSE, echo = TRUE}
+worldbank$Income_group <- factor(
+  worldbank$Income_group,
+  levels = c(
+    "Low income",
+    "Lower middle income",
+    "Upper middle income",
+    "High income"
+  )
+)
+```
+
+
+```{r prepare-boxplot-3, echo = TRUE}
+worldbank$Income_group <- factor(
+  worldbank$Income_group,
+  levels = c(
+    "Low income",
+    "Lower middle income",
+    "Upper middle income",
+    "High income"
+  )
+)
+```
+
+
+Now that we've sorted out our factor levels, we just need the code for the boxplot. Remember what we did for the last plot with changing the margins with `par(mar = ...` and using the `las=` argument in the `boxplot()` call to change the angle that the axis labels were written at.
+
+```{r boxplot3, exercise = TRUE, exercise.lines = 9, exercise.setup = "prepare-boxplot-3", fig.height = 6, fig.cap = "Annual CO~2~ Production in tonnes per capita plotted by income group"}
+
+
+```
+
+```{r boxplot3-hint-1}
+# You can use the same code we used for the previous example.
+# You just need to change the two variable names and the axis labels.
+```
+
+```{r boxplot3-hint-2}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r boxplot3-hint-3}
+#This is the solution
+
+par(mar = c(12,5,2,2))
+
+boxplot(CO2 ~ Income_group, 
+data = worldbank,
+xlab = "",
+ylab = "Per capita CO2 production (tonnes)",
+las = 2
+)
+```
+
+Have a look at the boxplot and think about the patterns you see. What do you conclude?
+
+<details><summary><b>Click here for explanation</b></summary>
+<br>
+Once again this boxplot gives us a great deal of information. You can clearly see the strong relationship between income group and per capita CO~2~ production, and you can also see from the asymmetric shape of the boxplots that the frequency distribution is somewhat positively skewed within each group, although not as strongly as when we plotted the whole variable by itself in the last section. This is something that we would need to bear in mind if we wished to analyse these data using, for example, ANOVA, which assumes that the error distribution within each group is normal. A further concern would arise from the increase in variance as the median gets larger --- you can see that the overall variation within the low income group is very small by comparison with the high income group, and again this *heteroscedasticity* would be a concern if we wished to analyse these data using ANOVA.
+</details>
+
+### Exercise: Log-transforming the y-axis
+
+One possible solution to the skewed errors and heteroscedasticity in this dataset would be to log transform the data prior to analysis. Before doing this it would be a good idea to plot the data on a log scale to make sure that the transformation is making the data  behave as we'd like. There are several ways to do this in R: we could just log transform the variable, either before plotting it:
+
+`logCO2 <- log10(worldbank$CO2`
+`boxplot(logCO2 ~ worldbank$Income-group...`
+
+or within the `boxplot()` function call:
+
+`boxplot(log(CO2) ~ Income_group, data = worldbank, ...`.
+
+An alternative is to transform the *scale* rather than the data. This converts the y-axis (in this case) to a log scale and then the untransformed data are plotted. For purposes of visualisation this often works better because the scale retains the real values of the data. We can ask R to plot the data in this way by adding another argument to the `boxplot()` function call, `log = "y"`. Note that if we were plotting a scatterplot then we could plot a log-scale x-axis instead with `log = "x"` or we could have both axes on a log scale with `log = "xy"`. Because the only continuous axis in our boxplot is the y-axis it only makes sense to change the scale of that one.
+
+Try to plot your boxplot with a log-scaled y-axis.
+
+```{r boxplot4, exercise = TRUE, exercise.lines = 9, exercise.setup = "prepare-boxplot-3", fig.height = 6, fig.cap = "Log annual CO~2~ production in tonnes per capita plotted by income group"}
+
+```
+
+
+```{r boxplot4-hint-1}
+# You can use the same  code as before
+# You just need to add the new argument
+```
+
+
+```{r boxplot4-hint-2}
+#Check that there's a comma between all arguments 
+#and that all your brackets and quote marks are 
+#matched.
+```
+
+```{r boxplot4-hint-3}
+#This is the solution
+
+par(mar = c(12,5,2,2))
+
+boxplot(CO2 ~ Income_group, 
+data = worldbank,
+xlab = "",
+ylab = "Log scaled per capita\n CO2 production (tonnes)",
+las = 2,
+log = "y"
+)
+```
+
+Plotting the data on a log scale gives us a very different graph indeed. The variances are roughly equivalent between the groups and there is only a hint of asymmetry, suggesting that the skew that was present before has been largely dealt with. If you were to wish to compare the mean CO~2~ production figures between these groups using ANOVA there's nothing to indicate potential problems from heteroscedasticity or skewed error distributions here.
+
+### Multiple boxplot quiz
+
+Here's a boxplot showing a somewhat more sophisticated plot than the ones we've seen before. This is showing the percent forested area data again, but this time we've divided it up by two factors: one called `Income_binary` which has income coded simply as "high" or "low" and a second one dividing nations depending on whether they are in the tropics or not called `Climate_region`. There's a fair bit of code to draw this, mainly because we want the x-axis labels to be nice. If you're interested I've copied it in after the quiz.
+
+```{r fig.cap = "Percentage forest cover by income and climate region", fig.height = 6, echo = FALSE}
+
+par(mar = c(5,4,2,2) + 0.1) #Reset the margins to the default values
+
+#Draw the boxplot
+boxplot(
+  Forest_area ~ Income_binary * Climate_region, #Variables to be plotted: note the use of * to specify the interaction between the two factors
+  data = worldbank, #Use the worldbank data frame
+  ylab = "Percentage of area forested", #set the y-axis label
+  xlab = "", #no x-axis label
+  xaxt = "n" #don't draw the x-axis
+)
+
+#Draw in the x-axis
+axis(
+  side = 1, #Draw the axis at the bottom
+  at = 1:4, #Where to put the tick marks
+  padj = 0.6, #Adjust the text down a bit
+  labels = c( #Vector of text for the labels
+    "High income\n Temperate\n or Polar", #The \n inserts a new line 
+    "Low income\nTemperate\n or Polar",
+    "High Income\nTropical\n",
+    "Low income\nTropical\n"
+  )
+)
+```
+
+Have a look at the graph and try to answer these questions
+
+```{r quiz2, echo = FALSE}
+quiz(
+  question("Which of the following are true? More than one answer can be correct.",
+    answer("The interquartile range for low income tropical countries is the largest of all the groups"),
+    answer("The upper quartile for low income temperate or polar countries is less than the lower quartile for high income temperate or polar countries", correct = TRUE),
+    answer("No high income tropical country has a percentage forest cover lower than all the low income temperate or polar countries"),
+    answer("The median percentage forest cover values are roughly the same for all groups aside from the low income temperate or polar countries", correct = TRUE),
+    answer("The variance of each of the four groups is likely to be roughly the same")
+  ),
+  question("Regarding the two temperate or polar groups only, which of the following are correct?  More than one answer can be correct.",
+    answer("There is an outlier in the low income group that should be removed"),
+    answer("The frequency distributions of both groups are likely to be roughly normal, albeit with some extreme values", correct = TRUE),
+    answer("If you plotted both income groups as a single variable you might see a bimodal distribution", correct = TRUE),
+    answer("There is an effect of income whereby the median percentage forest cover for high income countries is roughly three times that of low income countries", correct = TRUE),
+    answer("There is strong positive skew in the data for low income countries only")
+  )
+)
+```
+
+
+### Script for plot with multiple factors
+
+```{r eval = FALSE}
+
+par(mar = c(5,4,2,2) + 0.1) #Reset the margins to the default values
+
+#Draw the boxplot
+boxplot(
+  Forest_area ~ Income_binary * Climate_region, #Variables to be plotted: note the use of * to specify the interaction between the two factors
+  data = worldbank, #Use the worldbank data frame
+  ylab = "Percentage of area forested", #set the y-axis label
+  xlab = "", #no x-axis label
+  xaxt = "n" #don't draw the x-axis
+)
+
+#Draw in the x-axis
+axis(
+  side = 1, #Draw the axis at the bottom
+  at = 1:4, #Where to put the tick marks
+  padj = 0.6, #Adjust the text down a bit
+  labels = c( #Vector of text for the labels
+    "High income\n Temperate\n or Polar", #The \n inserts a new line 
+    "Low income\nTemperate\n or Polar",
+    "High Income\nTropical\n",
+    "Low income\nTropical\n"
+  )
+)
+```
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

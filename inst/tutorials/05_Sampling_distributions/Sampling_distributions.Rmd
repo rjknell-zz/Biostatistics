@@ -1,0 +1,562 @@
+---
+title: "Sampling and uncertainty 1: Sampling distributions"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  What are sampling distributions and why are they important??
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Welcome
+
+Welcome to the sampling and uncertainty tutorials. These aim to teach how we quantify uncertainty in statistics via understanding sampling distributions, standard errors and confidence intervals. There are four tutorials in total and each builds on the previous one. There is some knowledge of R assumed: if you are unhapy with concepts such as arguments in functions, saving data into vectors etc. then you should probably review these before attempting these.
+
+## Introduction
+
+There's a fundamental problem in much of science which revolves around the simple fact that we are usually unable to measure all of the things we would like to measure. Let's say you're a climate change biologist and you're concerned that chinstrap penguin populations in Antarctica might be negatively impacted by rising temperatures because the availability of krill, their main food, will decline as the temperature increases. To monitor this you want to know how much the penguins in your population weigh at the start of the reproductive season, so that you can see if their mean weight is declining over time. There are estimated to be around 8 million chinstrap penguins on the planet, and in your study population there are around 55,000 breeding pairs, so a total population of somewhere above 110,000. It's next to impossible to catch and weigh 110,000 penguins, of course, so what you would do would be to weigh a smaller number, maybe 30, maybe 100, maybe 500 depending on the availability of people, time, and equipment for penguin capture and and weighing. This group of penguins represents a *sample* of the total *population*. What you are trying to find out is the mean weight for the population, the *population mean* ($\mu$) and the hope is that the mean weight of the penguins in your sample (the *sample mean*, $\bar{x}$) is sufficiently close to the mean weight of all the penguins in your population to be a useful number.
+
+
+![Chinstrap penguin](images/chinstrap.jpg){width="400"}
+
+Chinstrap penguin on Deception island. Photo Christopher Michel, released on a creative commons CC BY 2.0 licence.
+
+ Assuming you've managed to avoid any bias in your sampling, you still have to think about how representative your sample mean is likely to  be of the true population mean. Because of chance events in the sampling process, a completely random sample will usually be different from the population it's sampled from in some way. In our penguin example you might have a bigger proportion of heavy or light penguins in your sample than in the population, giving you a sample mean that is too high or too low.
+
+There is, then, *uncertainty* regarding how representative a sample mean is of the population mean, and it's important to be able to measure this uncertainty in some way: you need to know whether the mean that you've produced is likely to be a good estimate of the population mean or not. This series of tutorials teaches a series of important concepts related to this: sampling distributions, standard errors and confidence intervals. These are the ideas and tools that statisticians use to describe and quantify the amount of uncertainty associated with a particular estimate.
+
+
+## The sampling distribution of the mean
+
+To try to understand how your sample mean might deviate from the population mean we need to think about the possible outcomes when you sample from a given population. As another example, let's say you want to know what the average systolic blood pressure is for women between 20 and 30 years old in the UK. Measuring the blood pressure of every woman aged between 20 and 30 in a population of 66 million people would take a long time, however, so as with our penguins what you would do instead is sample from the population: select a smaller number of individuals at random, measure them and hope that the value you calculate from your sample (the sample mean, denoted by $\bar{x}$) is sufficiently similar to the population mean (denoted by $\mu$) to give you a good idea of what the population level value is. We can simulate this using R's excellent random number generation tools. The `rnorm()` function generates values drawn from a normal distribution with a specified standard deviation and mean, with the arguments for the function being `n = ` for the sample size, `mean = ` for the mean and `sd = ` for the standard deviation. Here I've used `rnorm()` to generate 30 numbers from a normal distribution with `mean = 120` and `sd = 17` which is close to what we might see in women of the age class we're interested in.
+
+```{r}
+# Set the random number seed so we get the same
+# result each time
+set.seed(10)
+
+# Generate sample and save as a vector
+# called sample1
+sample1 <- rnorm(n = 30,
+                 mean = 120,
+                 sd = 17)
+
+# Round the values off to 1 decimal place
+sample1 <- round(sample1, 1)
+
+# Show us the numbers!
+print(sample1)
+```
+
+What's the mean of our sample? See if you can calculate it using the `mean()` function.
+
+```{r mean1-setup, echo = FALSE}
+
+set.seed(10)
+
+# Generate sample and save as a vector
+# called sample1
+sample1 <- rnorm(n = 30,
+                 mean = 120,
+                 sd = 17)
+
+# Round the values off to 1 decimal place
+sample1 <- round(sample1, 1)
+```
+
+
+```{r mean1, exercise = TRUE}
+
+
+```
+
+```{r mean1-hint-1}
+# You just need to put the name of the vector
+# (sample1) as an argument for the mean() function
+```
+
+```{r mean1-hint-2}
+# This is the solution
+
+mean(sample1)
+```
+
+So we simulated sampling 30 individuals from a population with a population mean of 120, and our sample mean is 114.7. That's somewhat close to the actual population mean but purely by random chance we got more low values than high values in our sample and so our sample mean underestimates the population mean by 5.3 mmHg. If you were to do this exercise with in the real world, however, you would have no idea at all how representative your sample mean was. It could be exactly right, it could be slightly low, it could be much, much too high. What about taking a second sample? This code is very similar to the previous exercise, but there are three mistakes that mean it won't run as it is. See if you can fix them.
+
+```{r mean2, exercise = TRUE, exercise.lines = 15}
+
+set.seed(2)
+
+# Generate sample and save as a vector
+# called sample1
+sample2 <- rnorm(n = 30,
+                 mean = 120
+                 sd = 17)
+
+# Round the values off to 1 decimal place
+sample2 <- round(sample1, 1
+
+# Calculate the mean
+mean(sample2)
+```
+
+```{r mean2-hint-1}
+# Check that all the arguments are separated by commas
+```
+
+```{r mean2-hint-2}
+# Check that all the arguments are separated by commas
+# 
+# Check that all the brackets pair up
+#
+# Check that all the object names are correct
+```
+
+```{r mean2-hint-3}
+# Check that all the arguments are separated by commas
+# 
+# There's a missing comma in the rnorm(... function call
+# 
+# Check that all the brackets pair up
+# 
+# There's a missing bracket in the round(... function call 
+#
+# Check that all the object names are correct
+#
+# There's a mis-named object in the round(... function call 
+```
+
+```{r mean2-hint-4}
+# This is the solution:
+
+set.seed(2)
+
+# Generate sample and save as a vector
+# called sample1
+sample2 <- rnorm(n = 30,
+                 mean = 120,
+                 sd = 17)
+
+# Round the values off to 1 decimal place
+sample2 <- round(sample2, 1)
+
+# Calculate the mean
+mean(sample2)
+```
+
+This time our sample mean overestimates the population mean somewhat, so the random number generator, purely by chance, gave us more high values. The value we obtained from the second sample is different from the first one simply because we have sampled (or simulated sampling) a separate set of individuals and they will not all have the same blood pressures as the women in the first sample. Now we have a somewhat better idea of what the real population mean might be: we took two samples of thirty, one of which gave a mean of 114.7 and one a mean of 123.9. You might now be a bit more confident that the true value of the mean lies somewhere in the region of these two values.
+
+Now think about what would happen if you repeated this many times, maybe a hundred. You select 30 women from the population, measure their blood pressure and calculate a mean, then you do it again 99 more times. Obviously no one would actually do this, but if you did you would generate a dataset of 100 sample means. Some of these would be very close to the actual population mean, but some would not: simply by chance in one sample you might get a lot of people with rather high blood pressure, meaning that your sample mean was rather higher than the population mean, or you might get several people with very low blood pressure leading to a low estimate. If you were to plot a frequency histogram of your 100 means it might look like this:
+
+```{r}
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 100, mean(rnorm(
+    n = 30, mean = 120, sd = 17
+  )))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure (mm Hg)",
+     main = "Frequency histogram for 100 blood \npressure samples")
+```
+
+We can see that the majority of our sample means are relatively close to the true population mean of 120 mm Hg, but some are not. The distribution overall is roughly symmetrical as you might expect, with about the same number of high values as low values. What might this look like if we increased our sample size from 100 to 10000? Here's the code we used before, try to change it to have a sample of 10000 means instead of 100.
+
+```{r sampling1, exercise = TRUE, exercise.lines = 20}
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 100, mean(rnorm(
+    n = 30, mean = 120, sd = 17
+  )))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure (mm Hg)",
+     main = "Frequency histogram for 100 blood\npressure samples")
+```
+
+```{r sampling1-hint-1}
+#This is very simple: just change the 
+#"n = 100" argument in the replicate() function call
+#You probably want to change the title as well
+```
+
+```{r sampling1-hint-2}
+#This is the solution
+
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, mean(rnorm(
+    n = 30, mean = 120, sd = 17
+  )))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure",
+     main = "Frequency histogram for 10000 blood pressure samples")
+```
+
+Now you can really see the pattern in our distribution of means. The shape of this histogram should be familiar to you because it follows a *normal distribution* and you can clearly see that famous bell curve. If we repeatedly sample from the same population, and calculate a mean for each sample, therefore, it seems that the distribution of means follows a normal distribution, centred around the population mean. Recall that our aim is to quantify how accurate an estimate of the population mean our sample mean is likely to be, and have another look at this histogram. Knowing the shape of this *sampling distribution* of means tells us that any individual sample mean is most likely to be where the bulk of our means are located, so between about 117 and 123 mm Hg, or in other words within about 3mm Hg of the true population mean.
+
+## Sampling distributions of means from non-normal populations
+
+What if we don't sample from a normal distribution though? What might this *sampling distribution* of means look like if we drew them from a population with a distribution that didn't itself follow that bell curve?
+
+The `runif()` function in R draws numbers from a *uniform* distribution --- an even distribution lying between a maximum and a minimum. The arguments it takes are `n = ` for the sample size, `min = ` to define the minimum value and `max = ` to define the maximum. Here's some example data generated by `runif()`:
+
+```{r}
+# Generate random numbers fdrawn from uniform distirbution
+samples <- runif(n = 120, 
+                 min = 0, 
+                 max = 100)
+
+# Draw histogram
+# NB the \n in the main = argument is an 'escape character"
+# which tells R to put a new line in the text at that point
+
+hist(samples,
+     breaks = 20,
+     xlab = "Value",
+     main = "Frequency histogram for 120 numbers drawn\nat random from a uniform distribution")
+```
+
+As you can see, the data in this single sample are distributed fairly evenly across the whole range. Some of our bins have a few more datapoints than others, but overall there's no overall pattern. What happens if we use `runif()` to sample repeatedly from a uniform distribution and plot a frequency histogram of how our means are distributed? See if you can modify the code we used earlier to replace the `rnorm()` function generating the data we saw before with `runif()`, with a sample size of 30, a minimum of 105 and a maximum of 135. It's probably a good idea to change the title of the histogram to reflect what you're doing.
+
+```{r sampling2, exercise = TRUE, exercise.lines = 20}
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Values",
+     main = "Frequency histogram for 100 blood pressure samples")
+```
+
+```{r sampling2-hint-1}
+# What you need to change is the 
+# rnorm(n = 30, mean = 120, sd = 17)
+# part in the lines of code which begin
+# "samples <-" 
+```
+
+```{r sampling2-hint-2}
+# What you need to change is the 
+# rnorm(n = 30, mean = 120, sd = 17)
+# part in the samples <- lines of code
+
+#You need to replace it with 
+runif(n = 30, min = 105, max = 135)
+```
+
+```{r sampling2-hint-3}
+#What you need to change is the 
+# rnorm(n = 30, mean = 120, sd = 17)
+# part in the samples <- lines of code
+
+#You need to replace it with 
+# runif(n = 30, min = 105, max = 135)
+
+# Make sure all the arguments are 
+# separated by commas and that all 
+# the brackets match
+```
+
+
+```{r sampling2-hint-4}
+#This is the solution
+
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, 
+  mean(runif(n = 30, min = 105, max = 135)
+       ))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Values",
+     main = "Frequency histogram for the means of 10000 samples\nfrom a uniform distribution")
+```
+This histogram looks almost identical to the previous one where the means were generated from data drawn from a normal distribution, even though the population the data were drawn from this time had a distribution that in no way resembles a normal distribution. This illustrates a hugely important point:
+
+> If you sample repeatedly from the same population, as the number of samples increases **the sampling distribution of the means will always tend towards a normal distribution** with the mean of the sampling distribution tending to get closer to the population mean as the number of samples increases. For very large numbers of samples the sampling distribution of the means will be normal, and the mean for the sampling distribution will be the same as the population mean.
+
+## The effect of the size of each sample
+
+OK, so if we sample repeatedly and calculate lots of means the frequency distribution for those means will always tend towards a normal distribution, no matter what the underlying distribution. What if we increase the sample size each of those means is calculated from? Instead of taking 10000 samples of 30 values each and calculating a mean for each, what happens if we take 10000 samples of 100 values each and calculate a mean for each.
+
+Here's some code that will draw two sets of samples from the same normal distribution and draw two histograms. The part of the code beginning with `samples2 <-` needs to be filled in. Use the code from the `samples <-` lines but change it so that each mean is calculated from 100 values instead of 30. For the two histograms, we want them to be drawn with the same x-axis scaling so you'll need to add the argument `xlim = c(105, 135)` to the code for each one, and you'll want to change the titles as well to reflect what you're plotting. 
+
+```{r sampling3, exercise = TRUE, exercise.lines = 35, fig.height = 8}
+#Draw two plots one above the other
+par(mfrow = c(2,1))
+
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#This is the bit you need to complete
+samples2 <-
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure",
+     main = "Frequency histogram for 10000 blood pressure samples")
+
+#Plot frequency histogram of means
+hist(samples2,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure",
+     main = "Frequency histogram for 10000 blood pressure samples")
+```
+
+```{r sampling3-hint-1}
+# Use the code from 
+
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#starting with replicate. Change the sample size 
+#in the rnorm() function call to 100
+```
+
+
+```{r sampling3-hint-2}
+# You only need to change 1 number,
+# the n = 30, from the rnorm function call
+# need to be changed to n = 100,
+
+# For the xlim = c(105, 135) arguments just add 
+# this code in for each one
+```
+
+```{r sampling3-hint-3}
+# Make sure all the arguments are 
+# separated by commas and that all 
+# the brackets match
+```
+
+```{r sampling3-hint-4}
+# This is the solution
+
+
+#Draw two plots one above the other
+par(mfrow = c(2,1))
+
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#This is the bit you need to complete
+samples2 <-
+    replicate(n = 10000, 
+  mean(rnorm(n = 100, mean = 120, sd = 17)
+       ))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlim  =c(105, 135),
+     xlab = "Mean systolic blood pressure",
+     main = "Sample size  = 30")
+
+#Plot frequency histogram of means
+hist(samples2,
+     breaks = 20,
+     xlim  =c(105, 135),
+     xlab = "Mean systolic blood pressure",
+     main = "Sample size  = 100")
+```
+What you can see is that when the mean for each sample is calculated from more data, the amount of spread in the sampling distribution of means is lower: there are fewer sample means with very high or very low values. This makes sense of course: the larger the sample used to calculate the sample mean, the more accurate an estimate of the population mean it is likely to be.
+
+## How does the variance of the population affect the sampling distribution?
+
+Something else that might influence our sampling distribution is the amount of variability in the population that is being sampled from. Let's repeat the previous exercise but instead of changing the sample size for the second histogram try to change the standard deviation of the population being sampled from 17 to 10. We need to plot our histograms on the same x-axis scale so you need to add the argument `xlim = c(105, 135)` to each `hist()` function call.
+
+```{r sampling4, exercise = TRUE, fig.height = 6, exercise.lines = 35}
+#Draw two plots one above the other
+par(mfrow = c(2,1))
+
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#This is the bit you need to complete
+samples2 <-
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure",
+     main = "Frequency histogram for 10000 blood pressure samples")
+
+#Plot frequency histogram of means
+hist(samples2,
+     breaks = 20,
+     xlab = "Mean systolic blood pressure",
+     main = "Frequency histogram for 10000 blood pressure samples")
+```
+
+```{r sampling4-hint-1}
+# Use the code from 
+
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#starting with replicate. Change the 
+#standard deviation (sd)
+#in the rnorm() function call to 7
+```
+
+
+```{r sampling4-hint-2}
+# You only need to change 1 number,
+# the n = 30, from the rnorm function call
+# need to be changed to n = 100,
+
+# For the xlim = c(105, 135) arguments just add 
+# this code in for each one
+```
+
+```{r sampling4-hint-3}
+# Make sure all the arguments are 
+# separated by commas and that all 
+# the brackets match
+```
+
+```{r sampling4-hint-4}
+# This is the solution
+
+
+#Draw two plots one above the other
+par(mfrow = c(2,1))
+
+#Set random number seed
+set.seed(20)  
+
+#Generate the means of 100 samples of 30
+#datapoints each, drawn from a normal 
+#distribution with mean 120 and sd 17
+samples <-  
+  replicate(n = 10000, 
+  mean(rnorm(n = 30, mean = 120, sd = 17)
+       ))
+
+#This is the bit you need to complete
+samples2 <-
+    replicate(n = 10000, 
+  mean(rnorm(n = 100, mean = 120, sd = 10)
+       ))
+
+#Plot frequency histogram of means
+hist(samples,
+     breaks = 20,
+     xlim  =c(105, 135),
+     xlab = "Mean systolic blood pressure",
+     main = "Standard deviation  = 17")
+
+#Plot frequency histogram of means
+hist(samples2,
+     breaks = 20,
+     xlim  =c(105, 135),
+     xlab = "Mean systolic blood pressure",
+     main = "Standard deviation  = 10")
+```
+
+The second histogram shows that when samples are taken from a population with a lower standard deviation, the sampling distribution of the means is similarly reduced. This makes sense: if the individuals in the population are not especially variable then those in the sample are unlikely to show much variability, and *vice-versa*.
+
+## Summary and quiz
+
+What are the take-home messages from this? We know how sample means are likely to be distributed around population means, and we've seen that larger sample sizes and lower dispersion in the population being sampled will both lead to sample means that, on average, are closer to population means. If we want to quantify how certain we are, one option would be to repeartedly sample and to use the sampling distribution of means to tell us what the real population mean is likely to be. That's not usually going to be an option, however, but what we can do is use what we've found out in this tutorial to help us to quantify uncertainty for a single sample --- this takes us to the next tutorial, on standard errors.
+
+We'll finish up with a short quiz to see if you've managed to grasp the main points so far.
+
+```{r quiz, echo = FALSE}
+quiz(
+  question("Consider a situation where we have sampled repeatedly from a population, calculated a mean for each sample and drawn a frequency histogram of the means. Which of the following is correct?",
+    answer("The distribution of means will always be normal"),
+    answer("The distribution of means will always be centred on the population mean"),
+    answer("The distribution of means will show positive skew if the underlying population is itself positively skewed"),
+    answer("As the number of samples increases, the distribution of means will become closer to a normal distribution", correct = TRUE),
+    answer("If the number of samples is greater than 30, the mean of the sampling distribution will be equal to the population mean")
+  ),
+  question("Which of these cases would have the narrowest sampling distribution of means?",
+    answer("500 samples each of 100 from a population with standard deviation  = 2", correct = TRUE),
+    answer("500 samples each of 50 from a population with standard deviation  = 2"),
+    answer("1000 samples each of 50 from a population with standard deviation  = 3"),
+    answer("500 samples each of 100 from a population with standard deviation  = 3"),
+    answer("10000 samples each of 50 from a population with standard deviation  = 4")
+  )
+)
+```
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

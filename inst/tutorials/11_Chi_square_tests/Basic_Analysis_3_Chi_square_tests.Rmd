@@ -1,0 +1,278 @@
+---
+title: "Basic Analysis 3: Chi-square tests"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Chi-square tests are widely used to test assumptions about the distribution of counts (frequencies) of observations in different categories. Here we learn ho to do the two common types: Chi-square tests with "contingency tables" and Chi-square tests comparing expected and observed frequencies
+---
+
+```{r setup, include=FALSE}
+
+library(learnr)
+
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
+
+plague <- matrix(data = c(158, 81, 331, 549), nrow = 2)
+colnames(plague) <- c("Plague present", "Plague absent")
+rownames(plague) <- c("High diversity", "Low diversity")
+
+
+plague_expected <- matrix(data = c(104.4424, 134.5576, 384.5576, 495.4424), nrow = 2)
+colnames(plague_expected) <- c("Plague present", "Plague absent")
+rownames(plague_expected) <- c("High diversity", "Low diversity")
+```
+
+## Chi-square tests explained
+
+This video has an explanation of the basic principles behind the chi-square test, illustrated with a reanalysis of a very important dataset.
+
+![](https://youtu.be/-EyswWU8GPs)
+
+## Bubonic plague and rodent diversity in China
+
+Many people think that bubonic plague is a disease of the past and not something to worry about today. This is not, in fact, the case: plague still infects people in many parts of the world, including Southern and Central Africa, South America, the USA and South-East Asia. As is commonly known, the causative agent of plague is the bacterium *Yersinia pestis*, which is transmitted to humans when they are bitten by rat fleas which are themselves infected. Rat fleas don't just bite rats, and a number of rodent species are implicated as plague hosts which can lead to transmission to humans, so it's important to undrstand how rodent communities relate to plague incidence in people.
+
+As part of a study of plague incidence in China Zhe Sun and a large group of coworkers^1^ assembled a dataset of recorded plague cases from the beginning of the "third pandemic" of bubonic plague in the late 18th Century until the 1960s. They divided China into 1119 1º grid cells and classified each one as either having plague present (239) or absent (880). Each cell was then further classified as having a high-diversity (\> average number of species) or low diversity (\< average number of species) of rodents which were indicated as being likely plague hosts by a separate analysis. This gives us a table of data which looks like this:
+
+```{r}
+plague <- matrix(data = c(158, 81, 331, 549), nrow = 2)
+colnames(plague) <- c("Plague present", "Plague absent")
+rownames(plague) <- c("High diversity", "Low diversity")
+
+print(plague)
+```
+
+Just looking at the table we can see that the proportion of grid squares with plague recorded as present is higher in the high diversity than the low diversity squares. This suggests that there is some association between rodent species diversity and the presence of plague, but we have little idea of how likely it is that this apparent association could have arisen by random chance. To test the idea that this apparent association is simply a product of sampling error, we can do a chi-square test.
+
+To do this, we firstly calculate the expected values for each cell. These are the values that we would predict if there were no association between rodent diversity and plague presence. The expected value for each cell is:
+
+$$Expected\: value = \frac{Column\: total \times Row\: total}{Grand\: total}$$ We can calculate these easily and then assemble our full *contingency table*.
+
+```{r}
+Col_totals <- colSums(plague)
+Row_totals <- rowSums(plague)
+Grand_total <- sum(plague)
+
+plague2 <- cbind(plague, Row_totals)
+plague2 <- rbind(plague2, c(Col_totals, Grand_total))
+
+colnames(plague2)[3] <- "Totals"
+rownames(plague2)[3] <- "Totals"
+                
+print(plague2)
+```
+
+Now we can generate a new matrix with the calculated expected values for each cell. There are some blanks in the code indicated by XXXXX - try to fill them in.
+
+```{r exp_matrix, exercise = TRUE, exercise.lines = 12}
+
+# Generate vector of data
+plague_expect <- c(239 * 489/1119, # top left hand
+                     XXXXX * 630/1119, # bottom left hand
+                     880 * 489/XXXXX, # top right hand
+                     XXXXX * XXXXX/1119) # bottom right hand
+
+# Make it into a 2x2 matrix
+plague_expected <- matrix(plague_expect, nrow = 2)
+
+colnames(plague_expected) <- c("Plague present", "Plague absent")
+rownames(plague_expected) <- c("High diversity", "Low diversity")
+
+print(plague_expected)
+```
+
+```{r exp_matrix-hint-1}
+# You can find all the relevant numbers in the row and column totals of the plague2 matrix
+```
+
+```{r exp_matrix-hint-2}
+# This is the solution
+
+# Generate vector of data
+plague_expect <- c(239 * 489/1119, # top left hand
+                     239 * 630/1119, # bottom left hand
+                     880 * 489/1119, # top right hand
+                     880 * 630/1119) # bottom right hand
+
+# Make it into a 2x2 matrix
+plague_expected <- matrix(plague_expect, nrow = 2)
+
+colnames(plague_expected) <- c("Plague present", "Plague absent")
+rownames(plague_expected) <- c("High diversity", "Low diversity")
+
+print(plague_expected)
+```
+
+Now we have the expected values as well as the observed values. If there were no association between plague presence and rodent diversity then our expected values should be roughly equal to our observed values: in other words, our observed values minus our expected values should be roughly equal to zero for each cell in the table. Are they?
+
+```{r}
+plague - plague_expected
+```
+
+Those numbers look rather large, which might indicate that the observed counts of grid cells are not distributed as we would expect with no association. What we need to do is to convert these differences between observed and expected frequencies into a value which summarises how different our observed frequencies are from the expected values, and which would be distributed on a probability distribution that we can use to assess how likely or unlikely we would be to see this sort of difference simply from sampling error. We do this by calculating a chi-square value (AKA a $\chi^2$ value) as follows:
+
+$$\chi^2 = \sum{\frac{\left(observed - expected\right)^2}{expected}}$$ In other words, we take those differences between the observed and expected values that we calculated above, we square them, divide each one by the appropriate expected value and then add all of the values we've calculated together.
+
+Here's some code to do this. See if you can fill in the parts marked XXXXX.
+
+```{r chisq1, exercise = TRUE, exercise.lines = 10}
+
+# Calculate differences between observed and expected
+differences <- plague - plague_expected
+
+# Square them
+differences_squared <- XXXXX
+
+# Divide by the expected values
+chisq1 <- differences_squared/XXXXX
+
+# Calculate Chi-square test statistic
+
+chisq_test <- XXXXX(chisq1)
+
+# Print result
+cat("The calculated value of chi-square is", chisq_test)
+```
+
+```{r chisq1-hint-1}
+# Use the sum() function to add everything together
+# 
+# To square each value in a vector or a matrix, use
+# name^2
+```
+
+```{r chisq1-hint-2}
+# This is the solution:
+
+# Calculate differences between observed and expected
+differences <- plague - plague_expected
+
+# Square them
+differences_squared <- differences^2
+
+# Divide by the expected values
+chisq1 <- differences_squared/plague_expected
+
+# Calculate Chi-square test statistic
+
+chisq_test <- sum(chisq1)
+
+# Print result
+cat("The calculated value of chi-square is", chisq_test)
+```
+
+OK. We've calculated our test statistic. If the null hypothesis of no association were to be true and we sampled thousands of times from the same data and calculated htis value, it's distribution would follow the theoretical chi-square distribution on a certain number of degrees of freedom. For a chisquare test calculated on a contingency table, as we have done, the degrees of freedom are equal to the number of rows -1 times the number of columns -1. Since we have two rows and two columns that gives us (2-1) \* (2-1) df, which is equal to 1.
+
+Now that we know our test statistic, and we now how we would expect it to be distributed were the null hypothesis true, we can ask how likely we would be to see a value as big, or bigger, than the number we've calculated.
+
+We can do this with the `pchisq()` function as follows:
+
+```{r}
+pchisq(q=62, df=1, lower.tail=FALSE)
+```
+
+This is the p-value for our chi-square test. As you can see it's a very small number indeed, indicating that the probability of finding the pattern in the data that we have observed by sampling error alone is very, very small indeed.
+
+Unsurprisingly, R has a built-in function that will do a chi-square test for you so you don't have to go through the calculations we did above. The function is `chisq.test()` and if you give it a matrix as an argument it will carry out a chi-square test for a contingency table. The only difference is that if the matrix is a 2x2 matrix, as ours is, R will automatically apply something called *Yates' Correction for Continuity*. This is an adjustment to the calculation to take account for the way that some of the assumptions about how the test works don't really work perfectly with 2x2 tables, especially when one or more cells in the table has an expected value of 5 or less.
+
+This analysis doesn't really need Yates' correction because the expected values are all high but it doesn't make a lot of difference to the final result. See if you can get R to do a chi-square test. You just need to use the `chisq.test()` function with the `plague` matrix as the only argument.
+
+```{r chisquare_test1, exercise = TRUE}
+
+```
+
+```{r chisquare_test1-solution}
+# This is the solution
+
+chisq.test(plague)
+```
+
+You can see that Yates' correction makes the chi-square value slightly different, and also the p-value but the differences are small and the overall conclusion is the same: the apparent association between rodent diversity and plague, with grid squares more likely to have plague when rodent diversity is high, is very unlikely to have arisen by chance.
+
+To help us further interpret this analysis, we can ask R to tell us the *residuals* from the chi-square test. In the case of this particular analysis, the residuals are the difference between the expected and observed values, adjusted by dividing by the square root of the expected value. This adjusts the the observed - expected values by the sample size and these residuals can tell us about which cells in the table contribute the most to the overall result.
+
+```{r}
+chisq.test(plague)$residuals
+```
+
+Here, positive values indicate that there is a positive association: so cells with plague present are strongly associated with high rodent diversity, and cells without plague are associated more weakly with low rodent diversity. Negative values indicate the opposite, so low rodent diversity is strongly negatively associated with the presence of plague and high rodent diversity is more weakly negatively associated with the absence of plague.
+
+<br><br>
+
+<hr>
+
+1.  Sun, Z., Xu, L., Schmid, B.V., Dean, K.R., Zhang, Z., Xie, Y., Fang, X., Wang, S., Liu, Q., Lyu, B., Wan, X., Xu, J., Stenseth, N.C. & Xu, B. (2019) Human plague system associated with rodent diversity and other environmental factors. Royal Society open science, 6, 190216.
+
+## Habitat preferences in a reef fish
+
+Many reef fish have larval stages which develop in open water and only settle onto a reef as they develop towards adulthood. As part of this process they make choices about where to settle based on sensory cues that might include both visual and olfactory components. To try to understand this process, John Majoris and co-workers published a study in 2018^2^ in which they tested the habitat preferences of young neon gobies *Elacatinus lori* on the barrier reef in Belize. Adult *E. lori* live inside tube sponges, and Majoris *et al.* collected freshly settled *E. lori* individuals and carried out a series of choice tests to examine how they choose sponges to settle in.
+
+![](images/E_lori.png){width="400"}
+
+**Figure 1** Top panel: Neon goby, *Elacatinus lori*, wikimedia commons. Bottom panels: two yellow tube sponges, typical of the habitat where the fish lives. Photos from Majoris *et al*, 2018.
+
+These fish are found more often inhabiting a yellow sponge of a species called *Aplysina fistularis*, and more rarely in a similar species, *Agelas conifera*, which is brown in colour. As one part of the experiment, fish were presented with a choice between brown and yellow tube sponges. To investigate what senaory cues were important in the choice, some sponges were covered with a clear plastic cylinder, allowing visual information but not olfactory, and some were covered with a mesh, allowing olfactory cues but not visual. When both visual and olfactory cues were allowed, 25 fish chose one of the yellow sponges and 5 one of the brown ones. When visual cues only were allowed 21 chose a yellow sponge and 10 a brown one but when olfactory cues only were allowed, 11 fish chose one of the yellow sponges and 9 one of the brown ones.
+
+If the fish were choosing sponges at random we would expect that half of them would choose the yellow and half the brown sponges. Looking at these data there is certainly a bias towards yellow sponges when all cues or just visual cues are allowed, but how sure are we that this pattern hasn't arisen just by chance? 
+
+We can use a slightly different version of the chi-square test here which is used when we know what the expected frequency of our response variable is. In this case, if there were no choice operating we would expect the gobies to choose one of the brown sponges 50% of the time. To test whether the fish choice differs signficantly from this in the first case, with all visual cues allowed, we add an argument `p = c(0.5, 0.5)` to our `chisq.test()` function call. This tells `chisq.test()` to compare the observed frequencies with what would be expected were the probability of choosing a yellow or brown sponge equal. 
+
+```{r}
+# Test so see if preferences deviate from a 50/50
+# ratio when all sensory cues are allowed
+chisq.test(c(25,5), p = c(0.5, 0.5))
+```
+
+Note that since we are only dealing with two data points here I've just used the `c()` function to make a vector within the `chisq.test()` function call to input the data, rather than setting up an object separately. For the choice experiments where all cues were allowed, then, we have a highly significant pattern which is most unlikely to have arisen by chance. It seems that neon gobies have a strong preference for yellow sponges to live in.
+
+How about the other two cases? Try to repeat this analysis for the visual only and then olfactory only cases.
+
+```{r visual, exercise = TRUE}
+# Visual only
+
+```
+
+```{r visual-solution}
+# Visual only
+
+chisq.test(c(21,10), p = c(0.5, 0.5))
+```
+
+```{r olfactory, exercise = TRUE}
+# Olfactory only
+
+```
+
+```{r olfactory-solution}
+# Olfactory only
+
+chisq.test(c(11,9), p = c(0.5, 0.5))
+```
+
+Have a look at the results of all three chi-square tests and see if you can answer these questions.
+
+```{r quiz1, echo = FALSE}
+question("Which of the following statements are correct?  More than one answer can be correct.",
+    answer("When olfactory cues only are allowed the difference between the means is not statistically significant",  message = "Answer 1. This is not a test comparing means (that's a t-test). We are comparing frequencies here."),
+    answer("When visual cues only are allowed there is a significant preference for yellow sponges",correct = TRUE),
+    answer("When olfactory cues only are allowed there is no significant preference for yello or brown sponges", correct = TRUE),
+    answer("These results tell us that these fish are using vision alone to make choices about their habitat", message = "Answer 4. That's not something we can infer from these results. There is certainly evidence that visual cues are important on the scale at which this experiment was conducted, but olfactory cues could be important at other times or scales, and auditory cues could potentially also be important"),
+    answer("The p-value of 0.66 for the olfactory only test tells us that there is no effect of olfaction in habitat choice", message = "Answer 5. We always have to be careful when interpreting non-significant results. This result tells us that we have not found any evidence that olfaction is important, but our inability to find evidence does not necessarily mean that there really is no effect"),
+        answer("Because the p-value for visual cues only is very close to 0.05 we have to be cautious about interpreting this result",  correct = TRUE)
+  )
+```
+
+<br><br><hr>
+
+2\. Majoris, J.E., D'Aloia, C.C., Francis, R.K. & Buston, P.M. (2018) Differential persistence favors habitat preferences that determine the distribution of a reef fish. *Behavioral ecology: official journal of the International Society for Behavioral Ecology*, **29**, 429--439.
+
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

@@ -1,0 +1,533 @@
+---
+title: "Sampling and uncertainty 3: Confidence intervals"
+output: 
+  learnr::tutorial:
+    theme: default
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  How to calculate the confidence interval for a mean and what it means
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Confidence intervals
+
+Remember that the sampling distribution of means will approximate to a normal distribution, and that we can generate an estimate of what the standard deviation of this distribution of means is by calculating the standard error or SE. One thing you might recall is that if we know the standard deviation of a normal distribution that tells us things about the distribution of data wthin a normal distribution: 68% of all the data will lie within one standard deviation of the mean, 95% of all the data will lie within 1.96 standard deviations of the mean and 99% of all the data will lie within 2.58 standard deviations of the mean, as illustrated here.
+
+```{r echo=FALSE, fig.height = 5, fig.width = 6, fig.cap="**Figure 1** Probability density of a standard normal distribution with mean=0 and standard deviation=1 showing the areas defied by the mean plus or minus 1, 1.96 and 2.58 standard deviations."}
+X1 <- seq(-3, 3, length = 300)
+Y1 <- dnorm(X1)
+plot(X1, Y1, type = "n", xlab = "x", ylab = "P(x)")
+abline(v=0, lwd=0.5,lty=2)
+
+x0 <- min(which(X1 >= -2.58))
+x1 <- min(which(X1 >= -1.96))
+x2 <- min(which(X1 >= -1))
+x3 <- max(which(X1 <= 1))
+x4 <- max(which(X1 <= 1.96))
+x5 <- max(which(X1 <= 2.58))
+
+polygon(x = c(X1[c(1, 1:x0, x0)]), y = c(0, Y1[1:x0], 0), col = "white", border = NA)
+polygon(x = c(X1[c(x0, x0:x1, x1)]), y = c(0, Y1[x0:x1], 0), col = "#deebf7", border = NA)
+polygon(x = c(X1[c(x1, x1:x2, x2)]), y = c(0, Y1[x1:x2], 0), col = "#9ecae1", border = NA)
+polygon(x = c(X1[c(x2, x2:x3, x3)]), y = c(0, Y1[x2:x3], 0), col = "#3182bd", border = NA)
+polygon(x = c(X1[c(x3, x3:x4, x4)]), y = c(0, Y1[x3:x4], 0), col = "#9ecae1", border = NA)
+polygon(x = c(X1[c(x4, x4:x5, x5)]), y = c(0, Y1[x4:x5], 0), col = "#deebf7", border = NA)
+polygon(x = c(X1[c(x5, x5:300, 300)]), y = c(0, Y1[x5:300], 0), col = "white", 
+    border = NA)
+
+
+points(X1, Y1, type = "l")
+
+abline(v=0, lwd=0.5,lty=2)
+
+text(0, 0.18, "68% of values \n within 1 sd \n of the mean", cex = 1,col="white")
+arrows(0.6,0.18,0.99,0.18,length=0.1,angle=20,col="white")
+arrows(-0.6,0.18,-0.99,0.18,length=0.1,angle=20,col="white")
+
+
+text(0, 0.04, "95% of values \n within 1.96 sd \n of the mean", cex = 1,col="white")
+arrows(0.72,0.03,1.95,0.03,length=0.1,angle=20,col="white")
+arrows(-0.72,0.03,-1.95,0.03,length=0.1,angle=20,col="white")
+
+text(2.5,0.1, "99% of values \n within 2.58 sd \n of the mean", cex = 1)
+arrows(2.58,0.06,2.58,0.015,length=0.1,angle=20)
+```
+Let's flip that around: if we have an estimate of the mean and we know the standard error (which is the standard deviation of the sampling distribution of means), how often will the population mean lie within one standard error of our sample mean? Well, if 68% of the data lie within one standard deviation of the mean, then 68% of the time will we get a sample mean that's one standard error or less from the population mean.
+
+Let's get R's random number generators to test this out for us.
+
+```{r}
+
+set.seed(15)
+
+# Setup vectors for results
+means <- numeric(1000)
+se <- numeric(1000)
+
+# Generate 1000 means and SEs sampling from
+# the same population
+for (i in 1:1000) 
+  {
+      sample <- rnorm(n = 50, mean = 10, sd = 2)
+      means[i] <- mean(sample)
+      se[i] <- sd(sample)/sqrt(50)
+}
+
+# Is the population mean within 
+# one SE of the sample mean? If yes then "Hit"
+# If no then "Miss"
+miss <- ifelse(10 < means - se | 10 > means + se, 
+               "Miss", "Hit")
+
+# Count the number of hits and misses
+table(miss)
+```
+
+677 out of a 1000 times, or 67.7% of the time our random number generator produces a sample which is within one standard error of the population mean. This is very close to 68%, which is the percentage of data that should lie within one standard deviation of the mean in a normal distribution, and if we did this for, say, a million samples instead of a thousand it would be very close to 68% indeed. If we know the mean and the SE, therefore, we can quote a range of values within which we should find the population mean, the value we're really interested in, 68% of the time. We could call this the *68% confidence interval*.
+
+$$ 68\% \: CI  = \textrm{from} \:\bar{x} - SE \: \textrm{to} \: \bar{x} + SE $$
+
+## 95% Confidence intervals
+
+Now we are able to really quantify how uncertain we are about our estimate of the population mean, and we can put a figure on it. 68% confidence is a bit of a small value though, and it would be better if we could express a range which was more likely to include the true mean. Recall that 95% of the values in a normally distributed dataset should lie within 1.96 standard deviations of the mean. Is it the case that 95% of the time the population mean should lie within 1.96 standard errors of the sample mean?
+
+Sort of... if we know what the *population* standard deviation is then we know the standard error without bias and that will be true. If we don't know the population standard deviation, however, our sample standard deviation, from which we calculate our standard error, will actually be slightly biased towards lower values, especially for small samples. What we do to becase of this is to multiply the standard error by a value derived not from a normal distribution but from something called the *t-distribution*, which corrects for this bias.
+
+```{r echo = FALSE, fig.cap="**Figure 2** Normal distribution compared to two t-distributions. Black line: probability density of a standard normal distribution with mean=0 and standard deviation=1, Blue line: probability density of a *t* distribution on 2 degrees of freedom, Red line: probability density of a *t* distribution on 5 degrees of freedom. Note that the t-distribution is lower and wider than the normal distribution. This is because it is corrected for the probability of missing extreme large or small values at small sample sizes."}
+X1 <- seq(-3, 3, length.out = 200)
+
+Y1 <- dnorm(X1)
+Y2 <- dt(X1, df = 2)
+Y3 <- dt(X1, df = 5)
+
+plot(Y1 ~ X1,
+     type = "l",
+     col = "black",
+     xlab = "",
+     ylab = "Probability density"
+)
+
+points(Y2 ~ X1,
+       type = "l",
+       col = "steelblue"
+)
+
+points(Y3 ~ X1,
+       type = "l",
+       col = "firebrick4"
+)
+
+legend("topleft",
+       legend = c("Normal", "t 5df", "t 2df"),
+       lty = 1,
+       col = c("black", "firebrick4", "steelblue")
+)
+```
+
+
+
+We can find the value of *t* corresponding to that 1.96 value for a normal distribution by using R's `qt()` function which gives us the *quantiles* of the t-distribution, or in other words the value of *t* below which a given proportion of the data in a t-distribution should lie. As an example:
+
+```{r}
+qt(0.5, df = 100)
+```
+
+The t-distribution is symmetrical around zero, like a standard normal distribution, so 50% of the distribution lies below zero and 50% above. the `df = 100` argument is telling `qt()` how many *degrees of freedom* the t-distribution should have --- the t-distribution changes in shape with different sample sizes, so we need to tell `qt()` which distribution to use, and we actually use the degrees of freedom here which in this case would be n-1.
+
+We don't want the 50% quantile for *t* though, we want the quantile which corresponds to that 1.96 value which we would use in a simpler world. To get this we actually ask for the 97.5% quantile. This might sound weird but it makes sense because our sample mean can be both larger and smaller than the population mean, so if we want the value that excludes 5% of the distribution we actually want to exclude the 2.5% at the upper extreme of the distribution and the 2.5% at the lower extreme of the distribution.
+
+for a sample size of 30, therefore, we can find the value of *t* to multiply the SE by using:
+
+```{r}
+qt(0.975, df = 29)
+```
+
+Note that our df is 29 (n-1) for a sample size of thirty. To generate the *95% confidence intervals* for the mean of a sample of size thirty, therefore, we would use this formula:
+
+$$ 95\% \: CIs = \textrm{from} \: \bar{x} - t \times SE\: \: \textrm{to} \: \bar{x} + t \times SE.$$
+Let's go back to our blood pressure example. If you sampled 30 women between 20 and 30 at random and measured their systolic blood pressure you might get these values:
+
+102, 129, 95, 129, 136, 101, 77, 99, 126, 100, 143, 124, 119, 97, 106, 109, 119, 109, 119, 87, 115, 147, 131, 111, 154, 130, 142, 123, 118, 109
+
+See of you can calculate what the 95% confidence intervals for this sample are. To help I've started off with a vector called "bp" with the data in it. Remember, the mean can be calculated with the `mean()` function, the SE is the standard deviation (`sd()`) divided by the square root of the sample size, and you know the appropriate value of *t* from the calculation above.
+
+```{r CI1, exercise  = TRUE, exercise.lines = 35}
+bp <- c(102, 129, 95, 129, 
+        136, 101, 77, 99, 
+        126, 100, 143, 124,
+        119, 97, 106, 109, 
+        119, 109, 119, 87,
+        115, 147, 131, 111,
+        154, 130, 142, 123,
+        118, 109)
+
+```
+
+```{r CI1-hint-1}
+# You can calculate the mean simply as
+  
+  mean1 <- mean(bp)
+```
+
+```{r CI1-hint-2}
+# You can calculate the mean simply as
+  
+mean.bp <- mean(bp)
+
+# For the SE you need to divide the 
+# standard deviation by the square 
+# root of the sample size
+```
+
+```{r CI1-hint-3}
+# You can calculate the mean simply as
+  
+mean.bp <- mean(bp)
+
+# For the SE you need to divide the 
+# standard deviation by the square 
+# root of the sample size, like this:
+
+SE.bp <- sd(bp)/sqrt(30)
+```
+
+```{r CI1-hint-4}
+# You can calculate the mean simply as
+  
+mean.bp <- mean(bp)
+
+# For the SE you need to divide the 
+# standard deviation by the square 
+# root of the sample size, like this:
+
+SE.bp <- sd(bp)/sqrt(30)
+
+# For the upper 95% CI you need to
+# multiply the SE by the value of t (2.045)
+# and add it to the mean: for the lower
+# 95% CI subtract it from the mean
+```
+
+```{r CI1-hint-5}
+# You can calculate the mean simply as
+  
+mean.bp <- mean(bp)
+
+# For the SE you need to divide the 
+# standard deviation by the square 
+# root of the sample size, like this:
+
+SE.bp <- sd(bp)/sqrt(30)
+
+# For the upper 95% CI you need to
+# multiply the SE by the value of t (2.045)
+# and add it to the mean: for the lower
+# 95% CI subtract it from the mean, like
+# this:
+
+upper.CI <- mean.bp + 2.045*SE.bp
+lower.CI <- mean.bp - 20.45*SE.bp
+```
+
+```{r CI1-hint-6}
+
+# You can calculate the mean simply as
+  
+mean.bp <- mean(bp)
+
+# For the SE you need to divide the 
+# standard deviation by the square 
+# root of the sample size, like this:
+
+SE.bp <- sd(bp)/sqrt(30)
+
+# For the upper 95% CI you need to
+# multiply the SE by the value of t (2.045)
+# and add it to the mean: for the lower
+# 95% CI subtract it from the mean, like
+# this:
+
+upper.CI <- mean.bp + 2.045*SE.bp
+lower.CI <- mean.bp - 2.045*SE.bp
+
+# Lastly you need to ask R to print out your
+# values. You could just put in the object names
+# like this
+
+upper.CI
+lower.CI
+
+# More elegantly you can use cat() to
+# make it more intelligible:
+
+cat("Upper 95% CI = ", upper.CI)
+
+cat("Lower 95% CI = ", lower.CI)
+```
+
+So the 95% CIs for the mean systolic blood pressure for women between 20 and 30 years of age are from 110.1 mmHg to 123.7 mmHg. What does this mean?
+
+```{r quiz1, echo = FALSE}
+quiz(
+  question("Which of these statements are true? More than one answer can be correct.",
+    answer("95% of women between 20 and 25 have blood pressures between 110.1 and 123.7 mmHg"),
+    answer("The true population mean cannot be greater than 123.7 mmHg"),
+    answer("If you sampled 30 times from our population of women repeatedly, the true population mean would be between 110.1 and 123.7 mmHg 95% of the time", correct = TRUE),
+    answer("The 95% confidence intervals are only reliable because the data they are drawn from are normally distributed"),
+    answer("The 95% confidence intervals tell us about the likely location of the population mean", correct = TRUE)
+  )
+)
+```
+
+## Comparing two penguin populations
+
+Back to the penguins which we looked at in the first tutorial! Let's say that you've managed to measure the weights of 15 chinstrap penguins in one of your study populations. The weights that you've measured are (in Kg) 
+
+6.0, 5.8, 4.5, 3.7, 6.0, 4.3, 5.0, 6.0, 5.8, 3.5, 5.5, 5.7, 6.2, 4.7, 5.7
+
+Here's some code that will calculate the 95% confidence intervals for our penguin sample. There are two mistakes: see if you can spot them. Once you've fixed them, run the code. 
+
+```{r CI2, exercise = TRUE, exercise.lines = 35}
+
+penguins <- c(6.0, 5.8, 4.5, 3.7, 
+              6.0, 4.3, 5.0, 6.0, 
+              5.8, 3.5, 5.5, 5.7, 
+              6.2, 4.7, 5.7)
+
+# Calculate the mean
+mean1 <- mean(penguins)
+
+# Calculate the SE
+SE1 <- sd(penguins)/sqrt(14)
+
+# Calculute the value of t
+t1 <- qt(0.95, df = 14)
+
+# Calculate the CIs
+lowerCI <- mean1 - SE1 * t1
+upperCI <- mean1 + SE1 * t1
+
+
+cat("Lower CI =", lowerCI)
+
+cat("Upper CI =", upperCI)
+
+```
+
+```{r CI2-hint-1}
+# The first error is in the line
+SE1 <- sd(sample1)/sqrt(14)
+```
+
+```{r CI2-hint-2}
+# The first error is in the line
+SE1 <- sd(sample1)/sqrt(14)
+
+# The second error is in the line
+t1 <- qt(0.95, df = 14)
+```
+
+```{r CI2-hint-3}
+# The first error is in the line
+SE1 <- sd(sample1)/sqrt(9)
+
+# The standard deviation is being divided
+# by 14 (the df): it should be 15
+```
+
+```{r CI2-hint-4}
+# The first error is in the line
+SE1 <- sd(sample1)/sqrt(14)
+
+# The standard deviation is being divided
+# by 14 (the df): it should be 15
+
+# The second error is in the line
+t1 <- qt(0.95, df = 14)
+
+# the value 0.95 in the qt() call should
+# read 0.975
+```
+
+```{r CI2-hint-5}
+# The two lines should read
+
+# Calculate the SE
+SE1 <- sd(sample1)/sqrt(15)
+
+# Calculate the value of t
+t1 <- qt(0.975, df = 14)
+```
+
+Now you compare your penguin weights with a second set of weights from a population which you know have been feeding in an area where the krill population has been severely reduced by a combination of human fishing and climate effects. This time you managed to get the weights of 17 penguins, and the values you get are (in Kg):
+
+3.5, 4.7, 3.7, 4.4, 3.3, 4.8, 3.7, 3.7, 3.1, 3.2, 3.4, 3.7, 3.9, 5.2, 6.3, 3.6, 4.1 
+
+Just looking at these values you can see that these penguins have some individuals that are pretty light by comparison with your previous sample. Some are not however and one is heavier than the heaviest penguin in your previous sample. Maybe we could get some guidance by comparing the mean and 95% confidence interval values for our two samples. See if you can adapt the code from the previous example to calculate the new values.
+
+```{r CI3, exercise = TRUE, exercise.lines = 35}
+
+penguins2 <- c(3.5, 4.7, 3.7, 4.4, 
+               3.3, 4.8, 3.7, 3.7, 
+               3.1, 3.2, 3.4, 3.7, 
+               3.9, 5.2, 6.3, 3.6, 
+               4.1)
+```
+
+```{r CI3-hint-1}
+# You need to change the variable name 
+# to "penguins2" where necessary, and
+# you need to change the sample size and 
+# df values because your sample size
+# has changed
+```
+
+```{r CI3-hint-2}
+# You need to change the variable name 
+# to "penguins2" where necessary, and
+# you need to change the sample size and 
+# df values because your sample size
+# has changed
+
+# The sample size is 17 so the 
+# sd needs to be divided by 17 to 
+# calculate the SE.
+```
+
+```{r CI3-hint-3}
+# You need to change the variable name 
+# to "penguins2" where necessary, and
+# you need to change the sample size and 
+# df values because your sample size
+# has changed
+
+# The sample size is 17 so the 
+# sd needs to be divided by 17 to 
+# calculate the SE.
+# 
+# The df for the calculation of t
+# should be 16 (17-1)
+```
+
+```{r CI3-hint-4}
+# The solution is: 
+
+penguins2 <- c(3.5, 4.7, 3.7, 4.4, 
+               3.3, 4.8, 3.7, 3.7, 
+               3.1, 3.2, 3.4, 3.7, 
+               3.9, 5.2, 6.3, 3.6, 
+               4.1)
+
+# Calculate the mean
+mean2 <- mean(penguins2)
+
+# Calculate the SE
+SE2 <- sd(penguins2)/sqrt(17)
+
+# Calculute the value of t
+t2 <- qt(0.975, df = 16)
+
+# Calculate the CIs
+lowerCI2 <- mean2 - SE2 * t2
+upperCI2 <- mean2 + SE2 * t2
+
+
+cat("Lower CI =", lowerCI2)
+
+cat("Upper CI =", upperCI2)
+```
+
+
+## Plotting confidence intervals
+
+The confidence intervals for our second penguin sample are distinctly lower than those for the first. Let's plot a graph with *error bars* showing the two regions. You can see that I'm using the `arrows()` function to draw in the error bars, which is the easiest way to do this in base R graphics. 
+
+```{r error.bars-setup, echo = FALSE}
+penguins <- c(6.0, 5.8, 4.5, 3.7, 
+              6.0, 4.3, 5.0, 6.0, 
+              5.8, 3.5, 5.5, 5.7, 
+              6.2, 4.7, 5.7)
+
+# Calculate the mean
+mean1 <- mean(penguins)
+
+# Calculate the SE
+SE1 <- sd(penguins)/sqrt(14)
+
+# Calculute the value of t
+t1 <- qt(0.95, df = 14)
+
+# Calculate the CIs
+lowerCI <- mean1 - SE1 * t1
+upperCI <- mean1 + SE1 * t1
+
+
+penguins2 <- c(3.5, 4.7, 3.7, 4.4, 
+               3.3, 4.8, 3.7, 3.7, 
+               3.1, 3.2, 3.4, 3.7, 
+               3.9, 5.2, 6.3, 3.6, 
+               4.1)
+
+# Calculate the mean
+mean2 <- mean(penguins2)
+
+# Calculate the SE
+SE2 <- sd(penguins2)/sqrt(17)
+
+# Calculute the value of t
+t2 <- qt(0.975, df = 16)
+
+# Calculate the CIs
+lowerCI2 <- mean2 - SE2 * t2
+upperCI2 <- mean2 + SE2 * t2
+```
+
+```{r error.bars}
+
+# Dummy variable for x-axis
+X1 <- c(1,2)
+
+# Make vector of the means
+Y1 <- c(mean1, mean2)
+
+# Plot graph with means. No x-axis
+plot(Y1 ~ X1,
+     xlim = c(0.5, 2.5),
+     ylim = c(3.5, 6),
+     xaxt = "n",
+     pch = 16,
+     cex = 1.5,
+     col = "aquamarine4",
+     ylab = "Weight (Kg)",,
+     xlab = "")
+
+
+# Add error bars using arrows
+arrows(x0 = X1, y0 = c(lowerCI, lowerCI2),
+       x1 = X1, y1 = c(upperCI, upperCI2),
+       code = 3,
+       angle = 90,
+       length = 0.05,
+       lwd = 2,
+       col = "aquamarine4")
+
+# Draw in x-axis
+axis(side = 1,
+     at = c(1,2),
+     labels = c("Sample 1", "Sample 2"))
+```
+
+Looking at the graph, you can see that the 95% confidence intervals for sample 1 and sample 2 don't overlap at all. This means that it's unlikely that the population mean for sample 1 lies anywhere close to the population mean for sample 2, so we can be confident that the differences between our two samples unlikely to have arisen just from sampling error --- in other words, they are *significantly different*. As a rule of thumb, if the 95% confidence intervals for two measures don't overlap then they will be significantly different if you were to do a formal hypothesis test, so comparing confidence intervals is a quick way of seeing some of the broad patterns in your data. If they overlap a lot (so that the sample mean of one is within the 95% CIs of the other, for example) then you can be reasonably confident that there is probably not a significant difference. If there is a small amount of overlap, however, you can't be sure and you'd need to go on to do a formal significance test to get an idea of how confident you can be in your observed difference. Be careful! The idea that if the 95% CIs overlap there is no significant difference is widespread and you will come across it frequently. Unfortunately the real situation is more nuanced: *no overlap = significantly different*, *lots of overlap = not significantly different* but *some overlap = not sure need to do more analysis*.
+
+
+<br><br><hr>
+
+## License
+
+This content is licensed under a [https://www.gnu.org/licenses/gpl-3.0.en.html](GPL-3) license

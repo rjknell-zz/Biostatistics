@@ -4,12 +4,8 @@
 
 ## Test results
 
-R CMD check 0 errors 0 warnings 1 note:
+R CMD check 0 errors 0 warnings 0 notes
 
-* checking installed package size ... NOTE
-    installed size is  5.9Mb
-    sub-directories of 1Mb or more:
-      tutorials   5.7Mb
 
 check_win_devel() 0 errors 0 warnings 1 note:
 

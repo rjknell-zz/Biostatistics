@@ -45,7 +45,7 @@ Data on physical performance in Northern Quolls
 Charters, Jordan E. et al. (2019), Data from: Multidimensional analyses of physical performance reveal a size dependent trade-off between suites of traits, Dryad, Dataset, https://doi.org/10.5061/dryad.k0v636g
 }
 \references{
-Charters, J.E., Heiniger, J., Clemente, C.J., Cameron, S.F., Amir Abdul Nasir, A.F., Niehaus, A.C. & Wilson, R.S. (2018) Multidimensional analyses of physical performance reveal a size‐dependent trade‐off between suites of traits. Functional ecology, 32, 1541–1553.
+Charters, J.E., Heiniger, J., Clemente, C.J., Cameron, S.F., Amir Abdul Nasir, A.F., Niehaus, A.C. & Wilson, R.S. (2018) Multidimensional analyses of physical performance reveal a size-dependent trade-off between suites of traits. Functional ecology, 32, 1541-1553.
 }
 \examples{
 data(quolls)

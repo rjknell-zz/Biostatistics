@@ -26,7 +26,7 @@ Pinniped brain sizes and mating system
 https://onlinelibrary.wiley.com/doi/10.1111/j.1420-9101.2012.02520.x
 }
 \references{
-Fitzpatrick, J.L., Almbro, M., Gonzalez-Voyer, A., Hamada, S., Pennington, C., Scanlan, J. & Kolm, N. (2012) Sexual selection uncouples the evolution of brain and body size in pinnipeds. Journal of evolutionary biology, 25, 1321–1330.
+Fitzpatrick, J.L., Almbro, M., Gonzalez-Voyer, A., Hamada, S., Pennington, C., Scanlan, J. & Kolm, N. (2012) Sexual selection uncouples the evolution of brain and body size in pinnipeds. Journal of evolutionary biology, 25, 1321-1330.
 }
 \examples{
 data(pinniped)

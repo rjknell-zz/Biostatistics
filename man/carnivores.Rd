@@ -24,7 +24,7 @@ Data on mean brain and body mass for 199 species from the carnivora.
 Burger, Joseph Robert; George, Menshian Ashaki; Leadbetter, Claire; Shaikh, Farhin (2019), Data from: The allometry of brain size in mammals, Dryad, Dataset, https://doi.org/10.5061/dryad.2r62k7s
 }
 \references{
-Burger, J.R., George, M.A., Leadbetter, C. & Shaikh, F. (2019) The allometry of brain size in mammals. Journal of mammalogy, 100, 276–283.
+Burger, J.R., George, M.A., Leadbetter, C. & Shaikh, F. (2019) The allometry of brain size in mammals. Journal of mammalogy, 100, 276-283.
 }
 \examples{
 data(carnivores)

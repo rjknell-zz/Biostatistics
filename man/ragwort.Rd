@@ -19,7 +19,7 @@ Data on how plant-soil feedback affects growth of ragwort
   }
 }
 \source{
-Wang, M., Ruan, W., Kostenko, O., Carvalho, S., Hannula, S.E., Mulder, P.P.J., Bu, F., van der Putten, W.H. & Bezemer, T.M. (2019) Removal of soil biota alters soil feedback effects on plant growth and defense chemistry. The New Phytologist, 221, 1478–1491.
+Wang, M., Ruan, W., Kostenko, O., Carvalho, S., Hannula, S.E., Mulder, P.P.J., Bu, F., van der Putten, W.H. & Bezemer, T.M. (2019) Removal of soil biota alters soil feedback effects on plant growth and defense chemistry. The New Phytologist, 221, 1478-1491.
 }
 \examples{
 data(ragwort)

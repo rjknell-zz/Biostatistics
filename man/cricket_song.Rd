@@ -24,7 +24,7 @@ Cricket song dataset
 Houslay, Thomas M. et al. (2017), Data from: Mating opportunities and energetic constraints drive variation in age-dependent sexual signalling, Dryad, Dataset, https://doi.org/10.5061/dryad.tj693
 }
 \references{
-Houslay, T.M., Houslay, K.F., Rapkin, J., Hunt, J. & Bussière, L.F. (2017) Mating opportunities and energetic constraints drive variation in age‐dependent sexual signalling (ed C Miller). Functional ecology, 31, 728–741.
+Houslay, T.M., Houslay, K.F., Rapkin, J., Hunt, J. & Bussi??re, L.F. (2017) Mating opportunities and energetic constraints drive variation in age-dependent sexual signalling (ed C Miller). Functional ecology, 31, 728-741.
 }
 \examples{
 data(cricket_song)

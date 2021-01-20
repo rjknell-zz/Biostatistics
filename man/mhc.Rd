@@ -26,7 +26,7 @@ MHC promiscuity and pathogen diversity data
 https://doi.org/10.1371/journal.pbio.3000131.s017
 }
 \references{
-Manczinger, M., Boross, G., Kemény, L., Müller, V., Lenz, T.L., Papp, B. & Pál, C. (2019) Pathogen diversity drives the evolution of generalist MHC-II alleles in human populations. PLoS biology, 17, e3000131.
+Manczinger, M., Boross, G., Kemeny, L., Muller, V., Lenz, T.L., Papp, B. & Pal, C. (2019) Pathogen diversity drives the evolution of generalist MHC-II alleles in human populations. PLoS biology, 17, e3000131.
 }
 \examples{
 data(mhc)

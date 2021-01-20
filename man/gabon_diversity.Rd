@@ -35,7 +35,7 @@ Data on relative animal abundances in Gabon
 Koerner, Sally E. et al. (2017), Data from: Vertebrate community composition and diversity declines along a defaunation gradient radiating from rural villages in Gabon, Dryad, Dataset, https://doi.org/10.5061/dryad.vs97g
 }
 \references{
-Koerner, S.E., Poulsen, J.R., Blanchard, E.J., Okouyi, J. & Clark, C.J. (2017) Vertebrate community composition and diversity declines along a defaunation gradient radiating from rural villages in Gabon (ed S Cheyne). The Journal of applied ecology, 54, 805–814.
+Koerner, S.E., Poulsen, J.R., Blanchard, E.J., Okouyi, J. & Clark, C.J. (2017) Vertebrate community composition and diversity declines along a defaunation gradient radiating from rural villages in Gabon (ed S Cheyne). The Journal of applied ecology, 54, 805-814.
 }
 \examples{
 data(gabon_diversity)

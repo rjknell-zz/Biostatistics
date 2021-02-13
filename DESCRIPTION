@@ -1,7 +1,7 @@
 Package: Biostatistics
 Type: Package
 Title: Statistics Tutorials for Biologists
-Version: 1.0.0
+Version: 1.0.1
 Author: Rob Knell
 Maintainer: Rob Knell <r.knell@qmul.ac.uk>
 Description: Tutorials for statistics, aimed at biological scientists. 

@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 5)
 
 load("malawi_carbon.rda")
 load("quolls.rda")
-load("worldbank.rda")
+load("worldbank.Rda")
 load("carnivores.rda")
 load("mammal_longevity.rda")
 ```

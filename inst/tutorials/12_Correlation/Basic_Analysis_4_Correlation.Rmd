@@ -123,7 +123,7 @@ $$
 r = \left. \frac{\Sigma{\left(x-\bar{x}\right) \left(y-\bar{y}\right)}}{n-1} \right/s_xs_y,
 $$
 
-is the covariance *standardised* by the product of the standard deviations of $x$ and \$y\$. This takes out the effect of scale, and gives us a value for the correlation coefficient (technically in this case *Pearson's product-moment correlation coefficient* but life's too short for names that long) that will always be between -1 and 1, with -1 indicating a perfect negative correlation, 0 indicating no correlation and +1 indicating a perfect positive correlation. Let's calculate $r$ for our data. See if you can fill in the bits marked with XXXXX.
+is the covariance *standardised* by the product of the standard deviations of $x$ and $y$. This takes out the effect of scale, and gives us a value for the correlation coefficient (technically in this case *Pearson's product-moment correlation coefficient* but life's too short for names that long) that will always be between -1 and 1, with -1 indicating a perfect negative correlation, 0 indicating no correlation and +1 indicating a perfect positive correlation. Let's calculate $r$ for our data. See if you can fill in the bits marked with XXXXX.
 
 ```{r correlation_1, exercise = TRUE, exercise.lines = 25}
 # Mean of x
@@ -332,7 +332,7 @@ plot(Promiscuity_in_vitro ~ Intracellular,
      data = mhc,
      pch = 16,
      col = "aquamarine4",
-     xlab = "Extracellular pathogen diversity (species)",
+     xlab = "Intracellular pathogen diversity (species)",
      ylab = "Population-level promiscuity")
 ```
 

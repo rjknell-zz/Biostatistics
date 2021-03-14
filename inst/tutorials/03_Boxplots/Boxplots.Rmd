@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # worldbank <- read.csv("http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/worldbank.csv")
 
-load("worldbank.rda")
+load("worldbank.Rda")
 
 
 
